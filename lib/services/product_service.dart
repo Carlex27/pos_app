@@ -15,7 +15,7 @@ class ProductService {
   /// Obtiene todos los productos
   Future<List<Product>> fetchAll() async {
     final response = await _client.get(
-      Uri.parse('\$kApiBaseUrl/products/findAll'),
+      Uri.parse('$kApiBaseUrl/api/products/findAll'),
       headers: {'Content-Type': 'application/json'},
     );
     if (response.statusCode == 200) {
@@ -29,7 +29,7 @@ class ProductService {
   /// Crea un nuevo producto
   Future<Product> create(Product product) async {
     final response = await _client.post(
-      Uri.parse('\$kApiBaseUrl/products/create'),
+      Uri.parse('$kApiBaseUrl/api/products/create'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode(product.toJson()),
     );
@@ -43,7 +43,7 @@ class ProductService {
   /// Actualiza un producto existente
   Future<Product> update(Product product) async {
     final response = await _client.put(
-      Uri.parse('\$kApiBaseUrl/products/update'),
+      Uri.parse('$kApiBaseUrl/api/products/update'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode(product.toJson()),
     );
@@ -57,7 +57,7 @@ class ProductService {
   /// Elimina un producto por ID
   Future<void> delete(int id) async {
     final response = await _client.delete(
-      Uri.parse('\$kApiBaseUrl/products/delete/\$id'),
+      Uri.parse('$kApiBaseUrl/api/products/delete/\$id'),
       headers: {'Content-Type': 'application/json'},
     );
     if (response.statusCode != 200) {

@@ -32,6 +32,7 @@ class PosApp extends StatelessWidget {
         routes: {
           '/login': (ctx) => const LoginScreen(),
           '/home':  (ctx) => const HomeScreen(),
+
         },
       ),
     );

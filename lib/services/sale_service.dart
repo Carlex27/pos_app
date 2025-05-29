@@ -16,7 +16,7 @@ class SaleService {
   /// Obtiene todas las ventas
   Future<List<SaleResponse>> fetchAll() async {
     final response = await _client.get(
-      Uri.parse('\$kApiBaseUrl/sales/findAll'),
+      Uri.parse('$kApiBaseUrl/api/sales/findAll'),
       headers: {'Content-Type': 'application/json'},
     );
     if (response.statusCode == 200) {
@@ -30,7 +30,7 @@ class SaleService {
   /// Obtiene los detalles de una venta por ID
   Future<SaleResponse> fetchById(int id) async {
     final response = await _client.get(
-      Uri.parse('\$kApiBaseUrl/sales/details/\$id'),
+      Uri.parse('$kApiBaseUrl/api/sales/details/\$id'),
       headers: {'Content-Type': 'application/json'},
     );
     if (response.statusCode == 200) {
@@ -43,7 +43,7 @@ class SaleService {
   /// Crea una nueva venta
   Future<SaleResponse> create(SaleDto saleDto) async {
     final response = await _client.post(
-      Uri.parse('\$kApiBaseUrl/sales/create'),
+      Uri.parse('$kApiBaseUrl/api/sales/create'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode(saleDto.toJson()),
     );
@@ -57,7 +57,7 @@ class SaleService {
   /// Elimina una venta por ID
   Future<void> delete(int id) async {
     final response = await _client.delete(
-      Uri.parse('\$kApiBaseUrl/sales/delete/\$id'),
+      Uri.parse('$kApiBaseUrl/api/sales/delete/\$id'),
       headers: {'Content-Type': 'application/json'},
     );
     if (response.statusCode != 200) {

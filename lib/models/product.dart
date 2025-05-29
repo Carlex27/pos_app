@@ -27,10 +27,10 @@ class Product {
       SKU:          json['sku']               as String,
       nombre:       json['nombre']            as String,
       marca:        json['marca']             as String,
-      gradosAlcohol: (json['grados_alcohol']  as num).toDouble(),
+      gradosAlcohol: (json['gradosAlcohol']  as num).toDouble(),
       tamanio:      json['tamanio']           as String,
-      precioNormal: (json['precio_normal']    as num).toDouble(),
-      precioMayoreo:(json['precio_mayoreo']   as num).toDouble(),
+      precioNormal: (json['precioNormal']    as num).toDouble(),
+      precioMayoreo:(json['precioMayoreo']   as num).toDouble(),
       stock:        json['stock']             as int,
     );
   }
@@ -40,10 +40,10 @@ class Product {
     'sku':           SKU,
     'nombre':        nombre,
     'marca':         marca,
-    'grados_alcohol':gradosAlcohol,
+    'gradosAlcohol':gradosAlcohol,
     'tamanio':       tamanio,
-    'precio_normal': precioNormal,
-    'precio_mayoreo':precioMayoreo,
+    'precioNormal': precioNormal,
+    'precioMayoreo':precioMayoreo,
     'stock':         stock,
   };
 }

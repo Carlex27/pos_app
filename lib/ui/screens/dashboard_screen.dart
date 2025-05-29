@@ -1,11 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../../services/product_service.dart';
-import '../../services/sale_service.dart';
-import '../../models/product.dart';
-import '../../models/sale_response.dart';
-import '../../utils/date_formatter.dart';
-import '../widgets/sale_tile.dart';
 
 /// Pantalla principal con indicadores y ventas recientes
 class DashboardScreen extends StatelessWidget {
@@ -13,57 +6,115 @@ class DashboardScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final productService = Provider.of<ProductService>(context, listen: false);
-    final saleService = Provider.of<SaleService>(context, listen: false);
-    return FutureBuilder<List<dynamic>>(
-      future: Future.wait([productService.fetchAll(), saleService.fetchAll()]),
-      builder: (ctx, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        if (snapshot.hasError) {
-          return Center(child: Text('Error: \${snapshot.error}'));
-        }
-        final products = snapshot.data![0] as List<Product>;
-        final sales = snapshot.data![1] as List<SaleResponse>;
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(height: 20),
+          // Header
+          const Text(
+            'Dashboard',
+            style: TextStyle(
+              fontSize: 32,
+              fontWeight: FontWeight.bold,
+              color: Colors.black,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Bienvenido, Admin Principal',
+            style: TextStyle(
+              fontSize: 16,
+              color: Colors.grey[600],
+            ),
+          ),
+          const SizedBox(height: 32),
 
-        final today = DateTime.now();
-        final salesToday = sales.where((s) =>
-        s.saleDate.year == today.year &&
-            s.saleDate.month == today.month &&
-            s.saleDate.day == today.day
-        ).toList();
-
-        final ingresos = salesToday.fold<double>(0, (sum, s) => sum + s.total);
-        final lowStockCount = products.where((p) => p.stock < 5).length;
-
-        return SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text('Dashboard', style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 4),
-              const Text('Bienvenido, Admin Principal', style: TextStyle(fontSize: 16)),
-              const SizedBox(height: 24),
-              Wrap(
-                spacing: 16,
-                runSpacing: 16,
-                children: [
-                  InfoCard(title: 'Total Productos', value: products.length.toString()),
-                  InfoCard(title: 'Ventas Hoy', value: salesToday.length.toString()),
-                  InfoCard(title: 'Ingresos', value: '\\${ingresos.toStringAsFixed(2)}'),
-                  InfoCard(title: 'Stock Bajo', value: lowStockCount.toString(), highlight: lowStockCount > 0),
-                ],
+          // Cards Grid
+          GridView.count(
+            crossAxisCount: 2,
+            crossAxisSpacing: 16,
+            mainAxisSpacing: 16,
+            childAspectRatio: 1.0, // <- esto reduce la altura disponible por ítem
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            children: const [
+              InfoCard(
+                title: 'Total Productos',
+                value: '3',
+                icon: Icons.inventory_2_outlined,
+                color: Color(0xFF6B73FF),
               ),
-              const SizedBox(height: 24),
-              const Text('Ventas Recientes', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 8),
-              ...sales.take(5).map((s) => SaleTile(sale: s)),
+              InfoCard(
+                title: 'Ventas Hoy',
+                value: '2',
+                icon: Icons.trending_up,
+                color: Color(0xFF00D4AA),
+              ),
+              InfoCard(
+                title: 'Ingresos',
+                value: '\$144.00',
+                icon: Icons.attach_money,
+                color: Color(0xFF9C88FF),
+              ),
+              InfoCard(
+                title: 'Stock Bajo',
+                value: '0',
+                icon: Icons.warning_amber_outlined,
+                color: Color(0xFFFF6B6B),
+                highlight: false,
+              ),
             ],
           ),
-        );
-      },
+          const SizedBox(height: 32),
+
+          // Ventas Recientes Section
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.1),
+                  spreadRadius: 0,
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Ventas Recientes',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                const SaleTile(
+                  customerName: 'Carlos López',
+                  date: '1/20/2024, 2:15:00 PM',
+                  amount: '\$94.00',
+                  items: '4 items',
+                ),
+                const Divider(height: 24),
+                const SaleTile(
+                  customerName: 'María García',
+                  date: '1/20/2024, 10:30:00 AM',
+                  amount: '\$50.00',
+                  items: '2 items',
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -72,38 +123,165 @@ class DashboardScreen extends StatelessWidget {
 class InfoCard extends StatelessWidget {
   final String title;
   final String value;
+  final IconData icon;
+  final Color color;
   final bool highlight;
 
   const InfoCard({
     required this.title,
     required this.value,
+    required this.icon,
+    required this.color,
     this.highlight = false,
     Key? key,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: MediaQuery.of(context).size.width * 0.45,
-      child: Card(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.1),
+            spreadRadius: 0,
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: color.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
+                    icon,
+                    color: color,
+                    size: 20,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey[600],
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              value,
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: highlight ? Colors.red : Colors.black,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Widget para mostrar una venta individual
+class SaleTile extends StatelessWidget {
+  final String customerName;
+  final String date;
+  final String amount;
+  final String items;
+
+  const SaleTile({
+    required this.customerName,
+    required this.date,
+    required this.amount,
+    required this.items,
+    Key? key,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        // Avatar del cliente
+        Container(
+          width: 48,
+          height: 48,
+          decoration: BoxDecoration(
+            color: const Color(0xFFF0F0F0),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Icon(
+            Icons.person_outline,
+            color: Colors.grey[600],
+            size: 24,
+          ),
+        ),
+        const SizedBox(width: 16),
+
+        // Información del cliente y fecha
+        Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(title, style: const TextStyle(fontSize: 14, color: Colors.grey)),
-              const SizedBox(height: 8),
-              Text(value,
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: highlight ? Colors.red : Colors.black,
-                  )),
+              Text(
+                customerName,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                date,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey[600],
+                ),
+              ),
             ],
           ),
         ),
-      ),
+
+        // Monto y cantidad de items
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Text(
+              amount,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF00D4AA),
+              ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              items,
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey[600],
+              ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 }
