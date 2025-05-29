@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pos_app/ui/widgets/new_product.dart';
 import 'package:provider/provider.dart';
 import '../../services/product_service.dart';
 import '../../models/product.dart';
@@ -101,11 +102,15 @@ class ProductsScreen extends StatelessWidget {
             // Botón Agregar
             ElevatedButton.icon(
               onPressed: () {
-                print('Agregar producto');
+                //print('Agregar producto');
+                showDialog(
+                  context: context,
+                  builder: (_) => const NewProductForm(),
+                );
               },
               icon: const Icon(Icons.add, color: Colors.white, size: 18),
               label: const Text(
-                'Agregar',
+                'Agregar nuevo producto',
                 style: TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.w600,

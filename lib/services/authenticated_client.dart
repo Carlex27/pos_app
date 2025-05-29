@@ -17,6 +17,14 @@ class AuthenticatedClient extends http.BaseClient {
         _storage = storage ?? TokenStorage(),
         _authService = authService ?? AuthService();
 
+  Future<Map<String, String>> getAuthHeaders() async {
+    final token = await _storage.readAccessToken();
+    return {
+      'Authorization': 'Bearer $token',
+      'Content-Type': 'multipart/form-data', // aunque http.MultipartRequest ya lo maneja solo
+    };
+  }
+
   @override
   Future<http.StreamedResponse> send(http.BaseRequest request) async {
     // 1. Inyecta el token actual
@@ -68,4 +76,5 @@ class AuthenticatedClient extends http.BaseClient {
     }
     return req;
   }
+
 }
