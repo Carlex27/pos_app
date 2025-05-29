@@ -28,7 +28,20 @@ class ProductService {
       throw Exception('Error fetching products: \${response.statusCode}');
     }
   }
-
+  /// Metodo search para buscar productos por nombre o SKU o marca
+  Future<List<Product>> search(String query) async {
+    final response = await _client.get(
+      Uri.parse('$kApiBaseUrl/api/products/search')
+          .replace(queryParameters: {'query': query}),
+      headers: {'Content-Type': 'application/json'},
+    );
+    if (response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body);
+      return data.map((e) => Product.fromJson(e)).toList();
+    } else {
+      throw Exception('Error fetching products: \${response.statusCode}');
+    }
+  }
 
   /// Actualiza un producto existente
   Future<void> updateProductWithOptionalImage({
@@ -74,7 +87,7 @@ class ProductService {
   /// Elimina un producto por ID
   Future<void> delete(int id) async {
     final response = await _client.delete(
-      Uri.parse('$kApiBaseUrl/api/products/delete/\$id'),
+      Uri.parse('$kApiBaseUrl/api/products/delete/$id'),
       headers: {'Content-Type': 'application/json'},
     );
     if (response.statusCode != 200) {
