@@ -27,33 +27,13 @@ class _UsersScreenState extends State<UsersScreen> {
   Future<void> _fetchUsers([String query = '']) async {
     setState(() => _isLoading = true);
     try {
-      // Aquí iría tu servicio de usuarios
-      // final service = Provider.of<UserService>(context, listen: false);
-      // final users = query.isEmpty
-      //     ? await service.fetchAll()
-      //     : await service.search(query);
-
-      // Por ahora datos de ejemplo
-      final users = [
-        User(
-          id: '1',
-          name: 'Admin Principal',
-          role: 'Administrador',
-          createdAt: DateTime(2023, 12, 31),
-        ),
-        User(
-          id: '2',
-          name: 'Juan Pérez',
-          role: 'Empleado',
-          createdAt: DateTime(2024, 1, 14),
-        ),
-      ];
+      final service = Provider.of<UserService>(context, listen: false);
+      final users = query.isEmpty
+          ? await service.fetchAll()
+          : await service.search(query);
 
       setState(() {
-        _users = users.where((user) =>
-        user.name.toLowerCase().contains(query.toLowerCase()) ||
-            user.role.toLowerCase().contains(query.toLowerCase())
-        ).toList();
+        _users = users;
         _isLoading = false;
       });
     } catch (e) {
@@ -61,6 +41,8 @@ class _UsersScreenState extends State<UsersScreen> {
       setState(() => _isLoading = false);
     }
   }
+
+
 
   Future<void> _logout() async {
     final auth = Provider.of<AuthService>(context, listen: false);

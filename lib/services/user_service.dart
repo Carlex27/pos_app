@@ -17,6 +17,7 @@ class UserService {
       Uri.parse('$kApiBaseUrl/api/user/all'),
       headers: {'Content-Type': 'application/json'},
     );
+    print('Response body: ${response.body}');
     if (response.statusCode == 200) {
       final List<dynamic> data = jsonDecode(response.body);
       return data.map((e) => User.fromJson(e)).toList();

@@ -46,7 +46,7 @@ class UserTile extends StatelessWidget {
               ),
               child: Center(
                 child: Text(
-                  user.name.isNotEmpty ? user.name[0].toUpperCase() : 'U',
+                  user.username.isNotEmpty ? user.username[0].toUpperCase() : 'U',
                   style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.w600,
@@ -64,7 +64,7 @@ class UserTile extends StatelessWidget {
                 children: [
                   // Nombre del usuario
                   Text(
-                    user.name,
+                    user.username,
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
@@ -116,7 +116,7 @@ class UserTile extends StatelessWidget {
                   onPressed: () {
                     // Aquí iría la funcionalidad de editar
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Editar ${user.name}')),
+                      SnackBar(content: Text('Editar ${user.username}')),
                     );
                   },
                   icon: const Icon(
@@ -158,7 +158,7 @@ class UserTile extends StatelessWidget {
     switch (role.toLowerCase()) {
       case 'administrador':
         return Colors.red.shade600;
-      case 'empleado':
+      case 'vendedor':
         return Colors.blue.shade600;
       case 'supervisor':
         return Colors.green.shade600;
@@ -182,7 +182,7 @@ class UserTile extends StatelessWidget {
           ),
         ),
         content: Text(
-          '¿Estás seguro de que deseas eliminar a ${user.name}?',
+          '¿Estás seguro de que deseas eliminar a ${user.username}?',
           style: const TextStyle(fontSize: 16),
         ),
         actions: [
@@ -210,7 +210,7 @@ class UserTile extends StatelessWidget {
               // Aquí iría la lógica para eliminar
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('${user.name} eliminado')),
+                SnackBar(content: Text('${user.username} eliminado')),
               );
             },
             child: const Text(
