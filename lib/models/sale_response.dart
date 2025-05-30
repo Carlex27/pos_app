@@ -7,7 +7,8 @@ class SaleResponse {
   final DateTime saleDate;
   final double total;
   final String state;
-  final List<SaleItemResponse>? items; // si tu API los incluye en el mismo JSON
+  final List<SaleItemResponse>? items;// si tu API los incluye en el mismo JSON
+  final int itemCount;
 
   SaleResponse({
     required this.id,
@@ -17,6 +18,7 @@ class SaleResponse {
     required this.total,
     required this.state,
     this.items,
+    required this.itemCount
   });
 
   factory SaleResponse.fromJson(Map<String, dynamic> json) {
@@ -32,6 +34,7 @@ class SaleResponse {
           .map((e) => SaleItemResponse.fromJson(e))
           .toList()
           : null,
+      itemCount: json['itemCount'] as int,
     );
   }
 
@@ -43,6 +46,7 @@ class SaleResponse {
       'saleDate':    saleDate.toIso8601String(),
       'total':       total,
       'state':       state,
+      'itemCount':   itemCount,
     };
     if (items != null) {
       m['items'] = items!.map((e) => e.toJson()).toList();

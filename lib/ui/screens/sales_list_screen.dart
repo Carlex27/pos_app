@@ -13,7 +13,7 @@ class SalesScreen extends StatelessWidget {
     final service = Provider.of<SaleService>(context, listen: false);
 
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: const Color(0xFFF5F5F0),
       body: SafeArea(
         child: Column(
           children: [

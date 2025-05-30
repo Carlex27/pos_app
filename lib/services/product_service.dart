@@ -7,6 +7,7 @@ import '../config.dart';
 import 'authenticated_client.dart';
 
 import '../models/product.dart';
+import '../models/alta_product.dart';
 
 /// Servicio para consumo de la API de Productos usando cliente autenticado
 class ProductService {
@@ -42,6 +43,21 @@ class ProductService {
       throw Exception('Error fetching products: \${response.statusCode}');
     }
   }
+
+  Future<void> sendAltaProductos(List<AltaProduct> productos) async {
+    final uri = Uri.parse('$kApiBaseUrl/api/products/altaProducto');
+
+    final response = await _client.post(
+      uri,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode(productos.map((p) => p.toJson()).toList()),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Error al enviar productos: ${response.statusCode} ${response.body}');
+    }
+  }
+
 
   /// Actualiza un producto existente
   Future<void> updateProductWithOptionalImage({
@@ -82,6 +98,9 @@ class ProductService {
       throw Exception('Error actualizando producto: ${response.statusCode}');
     }
   }
+
+
+
 
 
   /// Elimina un producto por ID
