@@ -8,6 +8,7 @@ class Product {
   final double precioNormal;
   final double precioMayoreo;
   final int stock;
+  final String imagePath;
 
   Product({
     required this.id,
@@ -19,6 +20,7 @@ class Product {
     required this.precioNormal,
     required this.precioMayoreo,
     required this.stock,
+    required this.imagePath,
   });
 
   factory Product.fromJson(Map<String, dynamic> json) {
@@ -32,6 +34,7 @@ class Product {
       precioNormal: (json['precioNormal']    as num).toDouble(),
       precioMayoreo:(json['precioMayoreo']   as num).toDouble(),
       stock:        json['stock']             as int,
+      imagePath:    json['imagePath']         as String? ?? '',
     );
   }
 
@@ -45,5 +48,6 @@ class Product {
     'precioNormal': precioNormal,
     'precioMayoreo':precioMayoreo,
     'stock':         stock,
+    'imagePath':     imagePath,
   };
 }

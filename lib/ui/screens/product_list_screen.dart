@@ -1,64 +1,124 @@
 import 'package:flutter/material.dart';
+import 'package:pos_app/ui/widgets/alta.dart';
+import 'package:pos_app/ui/widgets/new_product.dart';
 import 'package:provider/provider.dart';
 import '../../services/product_service.dart';
 import '../../models/product.dart';
 import '../widgets/product_tile.dart';
 
 /// Pantalla de listado de productos
-class ProductsScreen extends StatelessWidget {
+class ProductsScreen extends StatefulWidget {
   const ProductsScreen({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
-    final service = Provider.of<ProductService>(context, listen: false);
+  State<ProductsScreen> createState() => _ProductsScreenState();
+}
 
+class _ProductsScreenState extends State<ProductsScreen> {
+  List<Product> _filteredProducts = [];
+  bool _isLoading = true;
+  String _searchQuery = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchProducts();
+  }
+
+  Future<void> _fetchProducts([String query = '']) async {
+    setState(() => _isLoading = true);
+    try {
+      final service = Provider.of<ProductService>(context, listen: false);
+      final products = query.isEmpty
+          ? await service.fetchAll()
+          : await service.search(query);
+
+      debugPrint('Productos encontrados (${products.length}): $query');
+
+      setState(() {
+        _filteredProducts = products;
+        _isLoading = false;
+      });
+    } catch (e) {
+      debugPrint('Error fetching products: $e');
+      setState(() => _isLoading = false);
+    }
+  }
+
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: const Color(0xFFF5F5F0),
       body: SafeArea(
         child: Column(
           children: [
-            // Header
+            // Header con caja de búsqueda
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  'Productos',
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
+              child: Row(
+                children: [
+                  const Text(
+                    'Productos',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
                   ),
-                ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: TextField(
+                      decoration: InputDecoration(
+                        hintText: 'Buscar producto...',
+                        hintStyle: TextStyle(color: Colors.grey[400]),
+                        filled: true,
+                        fillColor: Colors.white, // Fondo blanco como en el login
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12), // Bordes más redondeados
+                          borderSide: BorderSide.none,
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: Colors.grey.shade200),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(
+                            color: Color(0xFFFF7043), // Mismo color naranja del login
+                            width: 2,
+                          ),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 16,
+                        ),
+                        prefixIcon: Icon(
+                          Icons.search,
+                          color: Colors.grey[400],
+                          size: 20,
+                        ),
+                      ),
+                      onChanged: (value) {
+                        _searchQuery = value;
+                        _fetchProducts(_searchQuery);
+                      },
+                    ),
+                  ),
+                ],
               ),
             ),
 
             // Lista de productos
             Expanded(
-              child: FutureBuilder<List<Product>>(
-                future: service.fetchAll(),
-                builder: (context, snap) {
-                  if (snap.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-
-                  if (snap.hasError) {
-                    debugPrint('ERROR EN PRODUCTS: ${snap.error}');
-                    return Center(
-                      child: Text(
-                        'Error: ${snap.error}',
-                        style: const TextStyle(color: Colors.red),
-                      ),
-                    );
-                  }
-
-                  final products = snap.data!;
-                  return ListView.builder(
-                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 100), // deja espacio para botones flotantes
-                    itemCount: products.length,
-                    itemBuilder: (c, i) => ProductTile(product: products[i]),
-                  );
-                },
+              child: _isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : _filteredProducts.isEmpty
+                  ? const Center(child: Text('No se encontraron productos'))
+                  : ListView.builder(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
+                itemCount: _filteredProducts.length,
+                itemBuilder: (c, i) => ProductTile(product: _filteredProducts[i]),
               ),
             ),
           ],
@@ -67,7 +127,7 @@ class ProductsScreen extends StatelessWidget {
 
       // Botones flotantes
       floatingActionButton: Padding(
-        padding: const EdgeInsets.only(bottom: 50), // deja espacio arriba del bottom nav
+        padding: const EdgeInsets.only(bottom: 50),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -76,7 +136,10 @@ class ProductsScreen extends StatelessWidget {
               margin: const EdgeInsets.only(right: 12),
               child: ElevatedButton.icon(
                 onPressed: () {
-                  print('Alta Mercancía');
+                  showDialog(
+                    context: context,
+                    builder: (_) => const AltaProductWidget(),
+                  );
                 },
                 icon: Icon(Icons.fire_truck, size: 18, color: Colors.green.shade600),
                 label: Text(
@@ -101,11 +164,14 @@ class ProductsScreen extends StatelessWidget {
             // Botón Agregar
             ElevatedButton.icon(
               onPressed: () {
-                print('Agregar producto');
+                showDialog(
+                  context: context,
+                  builder: (_) => const NewProductForm(),
+                );
               },
               icon: const Icon(Icons.add, color: Colors.white, size: 18),
               label: const Text(
-                'Agregar',
+                'Agregar nuevo producto',
                 style: TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.w600,

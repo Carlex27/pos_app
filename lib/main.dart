@@ -1,6 +1,8 @@
 // main.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+
 
 import 'ui/screens/login_screen.dart';
 import 'ui/screens/home_screen.dart';
@@ -28,13 +30,25 @@ class PosApp extends StatelessWidget {
         theme: ThemeData(
           primarySwatch: Colors.brown,
         ),
+        localizationsDelegates: const [
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: const [
+          Locale('es', ''), // Español
+          Locale('en', ''), // Inglés (opcional)
+        ],
         initialRoute: '/login',
         routes: {
           '/login': (ctx) => const LoginScreen(),
           '/home':  (ctx) => const HomeScreen(),
-
         },
       ),
+
     );
+
   }
+
+
 }

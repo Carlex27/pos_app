@@ -95,7 +95,7 @@ class SaleTile extends StatelessWidget {
 
                   // Cantidad de items
                   Text(
-                    '${sale.items?.length ?? 0} items',
+                    '${sale.itemCount} productos',
                     style: TextStyle(
                       fontSize: 14,
                       color: Colors.grey.shade600,

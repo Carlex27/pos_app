@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../models/product.dart';
+import '../../config.dart';
+import 'edit_product_form.dart';
+import '../../services/product_service.dart';
+import 'package:provider/provider.dart';
 
 class ProductTile extends StatelessWidget {
   final Product product;
@@ -31,22 +35,18 @@ class ProductTile extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // Imagen del producto (placeholder gris)
-          Container(
-            width: 60,
-            height: 60,
-            decoration: BoxDecoration(
-              color: Colors.grey.shade300,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            // Aquí puedes agregar la imagen más adelante
-            // child: ClipRRect(
-            //   borderRadius: BorderRadius.circular(8),
-            //   child: Image.network(
-            //     product.imageUrl,
-            //     fit: BoxFit.cover,
-            //   ),
-            // ),
+          // Imagen del producto desde el backend
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: product.imagePath != null
+                ? Image.network(
+              '$kApiBaseUrl${product.imagePath}',
+              width: 60,
+              height: 60,
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => _placeholder(),
+            )
+                : _placeholder(),
           ),
 
           const SizedBox(width: 16),
@@ -66,6 +66,7 @@ class ProductTile extends StatelessWidget {
                   ),
                 ),
 
+                // SKU
                 Text(
                   'SKU: ${product.SKU}',
                   style: TextStyle(
@@ -73,9 +74,10 @@ class ProductTile extends StatelessWidget {
                     color: Colors.grey.shade600,
                   ),
                 ),
+
                 const SizedBox(height: 4),
 
-                // Marca - Tipo
+                // Marca - Tamaño
                 Text(
                   '${product.marca} - ${product.tamanio}',
                   style: TextStyle(
@@ -90,17 +92,14 @@ class ProductTile extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    // Precio
                     Text(
-                      '\$${product.precioNormal.toStringAsFixed(2)}',
+                      '\$${product.precioNormal.toStringAsFixed(2)} - ${product.precioMayoreo.toStringAsFixed(2)}',
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
                         color: Colors.green,
                       ),
                     ),
-
-                    // Stock
                     Text(
                       'Stock: ${product.stock}',
                       style: TextStyle(
@@ -119,11 +118,12 @@ class ProductTile extends StatelessWidget {
           // Botones de acción
           Column(
             children: [
-              // Botón editar
               InkWell(
                 onTap: () {
-                  // Aquí puedes agregar la lógica para editar
-                  print('Editar producto: ${product.nombre}');
+                  showDialog(
+                    context: context,
+                    builder: (_) => EditProductForm(product: product),
+                  );
                 },
                 child: Container(
                   padding: const EdgeInsets.all(8),
@@ -138,15 +138,9 @@ class ProductTile extends StatelessWidget {
                   ),
                 ),
               ),
-
               const SizedBox(height: 8),
-
-              // Botón eliminar
               InkWell(
-                onTap: () {
-                  // Aquí puedes agregar la lógica para eliminar
-                  _showDeleteDialog(context);
-                },
+                onTap: () => _showDeleteDialog(context),
                 child: Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
@@ -167,32 +161,57 @@ class ProductTile extends StatelessWidget {
     );
   }
 
+  Widget _placeholder() {
+    return Container(
+      width: 60,
+      height: 60,
+      color: Colors.grey.shade300,
+      child: const Icon(Icons.image_not_supported, color: Colors.grey),
+    );
+  }
+
   void _showDeleteDialog(BuildContext context) {
     showDialog(
       context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Eliminar producto'),
-          content: Text('¿Estás seguro de que quieres eliminar "${product.nombre}"?'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancelar'),
-            ),
-            TextButton(
-              onPressed: () {
+      builder: (context) => AlertDialog(
+        title: const Text('Eliminar producto'),
+        content: Text('¿Estás seguro de que quieres eliminar "${product.nombre}"?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () async {
+              try {
+                final productService = Provider.of<ProductService>(context, listen: false);
+                await productService.delete(product.id); // ← Aquí usamos el ID del producto
+
+                Navigator.of(context).pop(); // Cierra el diálogo de confirmación
+
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Producto "${product.nombre}" eliminado correctamente'),
+                    backgroundColor: Colors.green.shade600,
+                  ),
+                );
+              } catch (e) {
                 Navigator.of(context).pop();
-                // Aquí agregas la lógica para eliminar el producto
-                print('Producto eliminado: ${product.nombre}');
-              },
-              style: TextButton.styleFrom(
-                foregroundColor: Colors.red,
-              ),
-              child: const Text('Eliminar'),
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Error al eliminar el producto: $e'),
+                    backgroundColor: Colors.red.shade600,
+                  ),
+                );
+              }
+            },
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.red,
             ),
-          ],
-        );
-      },
+            child: const Text('Eliminar'),
+          ),
+        ],
+      ),
     );
   }
 }

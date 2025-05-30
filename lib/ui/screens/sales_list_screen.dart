@@ -3,17 +3,69 @@ import 'package:provider/provider.dart';
 import '../../services/sale_service.dart';
 import '../../models/sale_response.dart';
 import '../widgets/sale_tile.dart';
+import '../widgets/selector_date.dart';
 
-/// Pantalla de listado de ventas
-class SalesScreen extends StatelessWidget {
+class SalesScreen extends StatefulWidget {
   const SalesScreen({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
+  State<SalesScreen> createState() => _SalesScreenState();
+}
+
+class _SalesScreenState extends State<SalesScreen> {
+  late Future<List<SaleResponse>> _futureSales;
+  String _selectedType = 'hoy';
+  DateTime? _selectedDate;
+  DateTime? _selectedMonth;
+
+  @override
+  void initState() {
+    super.initState();
+    _futureSales = _fetchSales();
+  }
+
+  Future<List<SaleResponse>> _fetchSales() {
     final service = Provider.of<SaleService>(context, listen: false);
 
+    if (_selectedType == 'hoy' && _selectedDate != null) {
+      return service.fetchByDay(_selectedDate!);
+    } else if (_selectedType == 'dia' && _selectedDate != null) {
+      return service.fetchByDay(_selectedDate!);
+    } else if (_selectedType == 'mes' && _selectedMonth != null) {
+      return service.fetchByMonth(_selectedMonth!);
+    } else {
+      return service.fetchAll();
+    }
+  }
+
+  void _onTodaySelected(DateTime today) {
+    setState(() {
+      _selectedType = 'hoy';
+      _selectedDate = today;
+      _futureSales = _fetchSales();
+    });
+  }
+
+  void _onDaySelected(DateTime date) {
+    setState(() {
+      _selectedType = 'dia';
+      _selectedDate = date;
+      _futureSales = _fetchSales();
+    });
+  }
+
+  void _onMonthSelected(int year, int month) {
+    setState(() {
+      _selectedType = 'mes';
+      _selectedMonth = DateTime(year, month);
+      _futureSales = _fetchSales();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: const Color(0xFFF5F5F0),
       body: SafeArea(
         child: Column(
           children: [
@@ -30,10 +82,9 @@ class SalesScreen extends StatelessWidget {
                   ),
                 ],
               ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Título
                   const Text(
                     'Ventas',
                     style: TextStyle(
@@ -42,7 +93,12 @@ class SalesScreen extends StatelessWidget {
                       color: Colors.black87,
                     ),
                   ),
-
+                  const SizedBox(height: 12),
+                  SelectorDate(
+                    onTodaySelected: _onTodaySelected,
+                    onDaySelected: _onDaySelected,
+                    onMonthSelected: _onMonthSelected,
+                  ),
                 ],
               ),
             ),
@@ -50,21 +106,24 @@ class SalesScreen extends StatelessWidget {
             // Lista de ventas
             Expanded(
               child: FutureBuilder<List<SaleResponse>>(
-                future: service.fetchAll(),
-                builder: (c, snap) {
-                  if (snap.connectionState == ConnectionState.waiting) {
+                future: _futureSales,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Center(child: CircularProgressIndicator());
                   }
-                  if (snap.hasError) {
-                    return Center(child: Text('Error: ${snap.error}'));
+                  if (snapshot.hasError) {
+                    return Center(child: Text('Error: ${snapshot.error}'));
                   }
-                  final sales = snap.data!;
+                  final sales = snapshot.data!;
+                  if (sales.isEmpty) {
+                    return const Center(child: Text('No hay ventas registradas.'));
+                  }
                   return ListView.builder(
                     padding: const EdgeInsets.all(16),
                     itemCount: sales.length,
-                    itemBuilder: (c, i) => Padding(
+                    itemBuilder: (context, index) => Padding(
                       padding: const EdgeInsets.only(bottom: 12),
-                      child: SaleTile(sale: sales[i]),
+                      child: SaleTile(sale: sales[index]),
                     ),
                   );
                 },
