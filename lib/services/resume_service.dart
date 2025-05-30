@@ -14,7 +14,7 @@ class ResumeService {
   ResumeService({AuthenticatedClient? client})
       : _client = client ?? AuthenticatedClient();
 
-
+  /// Obtiene el resumen de ventas del día actual
   Future<ResumeVentas> fetchResumeVentasByDay(DateTime date) async {
     final String formattedDate = DateFormat('yyyy-MM-dd').format(date);
 
@@ -31,6 +31,7 @@ class ResumeService {
     }
   }
 
+  /// Obtiene el resumen del dashboard del día actual
   Future<ResumeDashboard> fetchResumeDashboardByDay(DateTime date) async {
     final String formattedDate = DateFormat('yyyy-MM-dd').format(date);
 
@@ -48,8 +49,8 @@ class ResumeService {
   }
 
 
-  /// Obtiene las ventas de un mes específico
-  Future<List<ResumeVentas>> fetchResumeVentasByMonth(DateTime date) async {
+  /// Obtiene el resumen de ventas de un mes específico
+  Future<ResumeVentas> fetchResumeVentasByMonth(DateTime date) async {
     final int year = date.year;
     final int month = date.month;
 
@@ -63,15 +64,14 @@ class ResumeService {
     );
 
     if (response.statusCode == 200) {
-      final List<dynamic> data = jsonDecode(response.body);
-      return data.map((e) => ResumeVentas.fromJson(e)).toList();
+      return ResumeVentas.fromJson(jsonDecode(response.body));
     } else {
       throw Exception('Error fetching sales for $month/$year: ${response.statusCode}');
     }
   }
 
-  /// Obtiene las ventas de un mes específico
-  Future<List<ResumeDashboard>> fetchResumeDashboardByMonth(DateTime date) async {
+  /// Obtiene el resumen del dashboard de un mes específico
+  Future<ResumeDashboard> fetchResumeDashboardByMonth(DateTime date) async {
     final int year = date.year;
     final int month = date.month;
 
@@ -85,8 +85,7 @@ class ResumeService {
     );
 
     if (response.statusCode == 200) {
-      final List<dynamic> data = jsonDecode(response.body);
-      return data.map((e) => ResumeDashboard.fromJson(e)).toList();
+      return ResumeDashboard.fromJson(jsonDecode(response.body));
     } else {
       throw Exception('Error fetching sales for $month/$year: ${response.statusCode}');
     }

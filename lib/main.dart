@@ -1,5 +1,7 @@
 // main.dart
 import 'package:flutter/material.dart';
+import 'package:pos_app/services/resume_service.dart';
+import 'package:pos_app/services/user_service.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
@@ -24,6 +26,8 @@ class PosApp extends StatelessWidget {
         Provider<AuthService>(create: (_) => AuthService()),
         Provider<ProductService>(create: (_) => ProductService()),
         Provider<SaleService>(create: (_) => SaleService()),
+        Provider<ResumeService>(create: (_) => ResumeService()),
+        Provider<UserService>(create: (_) => UserService()),
       ],
       child: MaterialApp(
         title: 'POS Cervecería',

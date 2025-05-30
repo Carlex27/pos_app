@@ -4,6 +4,9 @@ import '../../services/sale_service.dart';
 import '../../models/sale_response.dart';
 import '../widgets/sale_tile.dart';
 import '../widgets/selector_date.dart';
+import '../widgets/resume_ventas_wg.dart';
+import '../../services/resume_service.dart';
+import '../../models/resume_ventas.dart';
 
 class SalesScreen extends StatefulWidget {
   const SalesScreen({Key? key}) : super(key: key);
@@ -14,15 +17,11 @@ class SalesScreen extends StatefulWidget {
 
 class _SalesScreenState extends State<SalesScreen> {
   late Future<List<SaleResponse>> _futureSales;
+  late Future<ResumeVentas> _futureResumen;
   String _selectedType = 'hoy';
   DateTime? _selectedDate;
   DateTime? _selectedMonth;
 
-  @override
-  void initState() {
-    super.initState();
-    _futureSales = _fetchSales();
-  }
 
   Future<List<SaleResponse>> _fetchSales() {
     final service = Provider.of<SaleService>(context, listen: false);
@@ -38,11 +37,45 @@ class _SalesScreenState extends State<SalesScreen> {
     }
   }
 
+  Future<ResumeVentas> _fetchResumen(DateTime date) async {
+    try {
+      final service = Provider.of<ResumeService>(context, listen: false);
+
+      if (_selectedType == 'mes') {
+        final result = await service.fetchResumeVentasByMonth(date);
+
+        // Debug: Imprimir respuesta del mes
+        debugPrint('Resumen mes - Total ventas: ${result.totalVentas}, Total ingresos: ${result.totalIngresos}');
+
+        return result;
+      } else {
+        final result = await service.fetchResumeVentasByDay(date);
+        debugPrint('Resumen día - Total ventas: ${result.totalVentas}, Total ingresos: ${result.totalIngresos}');
+        return result;
+      }
+    } catch (e) {
+      debugPrint('Error en _fetchResumen: $e');
+      // En caso de error, devolver valores en cero para que el widget se muestre
+      return ResumeVentas(totalVentas: 0, totalIngresos: 0.0);
+    }
+  }
+
+
+  @override
+  void initState() {
+    super.initState();
+    final now = DateTime.now();
+    _selectedDate = now;
+    _futureSales = _fetchSales();
+    _futureResumen = _fetchResumen(now);
+  }
+
   void _onTodaySelected(DateTime today) {
     setState(() {
       _selectedType = 'hoy';
       _selectedDate = today;
       _futureSales = _fetchSales();
+      _futureResumen = _fetchResumen(today);
     });
   }
 
@@ -51,16 +84,20 @@ class _SalesScreenState extends State<SalesScreen> {
       _selectedType = 'dia';
       _selectedDate = date;
       _futureSales = _fetchSales();
+      _futureResumen = _fetchResumen(date);
     });
   }
 
   void _onMonthSelected(int year, int month) {
+    final date = DateTime(year, month);
     setState(() {
       _selectedType = 'mes';
-      _selectedMonth = DateTime(year, month);
+      _selectedMonth = date;
       _futureSales = _fetchSales();
+      _futureResumen = _fetchResumen(date);
     });
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -99,6 +136,19 @@ class _SalesScreenState extends State<SalesScreen> {
                     onDaySelected: _onDaySelected,
                     onMonthSelected: _onMonthSelected,
                   ),
+                  const SizedBox(height: 16),
+                  FutureBuilder<ResumeVentas>(
+                    future: _futureResumen,
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+                      if (snapshot.hasError || !snapshot.hasData) {
+                        return const SizedBox();
+                      }
+                      return ResumeVentasWd(data: snapshot.data!);
+                    },
+                  ),
                 ],
               ),
             ),
@@ -112,7 +162,7 @@ class _SalesScreenState extends State<SalesScreen> {
                     return const Center(child: CircularProgressIndicator());
                   }
                   if (snapshot.hasError) {
-                    return Center(child: Text('Error: ${snapshot.error}'));
+                    return Center(child: Text('Error: \${snapshot.error}'));
                   }
                   final sales = snapshot.data!;
                   if (sales.isEmpty) {
