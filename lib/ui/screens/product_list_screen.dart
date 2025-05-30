@@ -127,7 +127,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
 
       // Botones flotantes
       floatingActionButton: Padding(
-        padding: const EdgeInsets.only(bottom: 50),
+        padding: const EdgeInsets.only(bottom: 5),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
