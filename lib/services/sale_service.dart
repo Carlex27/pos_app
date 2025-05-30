@@ -1,9 +1,7 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
 import '../config.dart';
 import 'authenticated_client.dart';
-
-import '../models/SaleDto.dart';
+import 'package:intl/intl.dart';
 import '../models/sale_response.dart';
 
 /// Servicio para consumo de la API de Ventas usando cliente autenticado
@@ -40,28 +38,44 @@ class SaleService {
     }
   }
 
-  /// Crea una nueva venta
-  Future<SaleResponse> create(SaleDto saleDto) async {
-    final response = await _client.post(
-      Uri.parse('$kApiBaseUrl/api/sales/create'),
+  /// Obtiene los detalles de una venta por ID
+  Future<List<SaleResponse>> fetchByDay(DateTime date) async {
+    final String formattedDate = DateFormat('yyyy-MM-dd').format(date);
+
+    final response = await _client.get(
+      Uri.parse('$kApiBaseUrl/api/sales/by-date')
+          .replace(queryParameters: {'date': formattedDate}),
       headers: {'Content-Type': 'application/json'},
-      body: jsonEncode(saleDto.toJson()),
     );
+
     if (response.statusCode == 200) {
-      return SaleResponse.fromJson(jsonDecode(response.body));
+      final List<dynamic> data = jsonDecode(response.body);
+      return data.map((e) => SaleResponse.fromJson(e)).toList();
     } else {
-      throw Exception('Error creating sale: \${response.statusCode}');
+      throw Exception('Error fetching sales for date: ${response.statusCode}');
+    }
+  }
+  /// Obtiene las ventas de un mes específico
+  Future<List<SaleResponse>> fetchByMonth(DateTime date) async {
+    final int year = date.year;
+    final int month = date.month;
+
+    final response = await _client.get(
+      Uri.parse('$kApiBaseUrl/api/sales/by-month')
+          .replace(queryParameters: {
+        'year': year.toString(),
+        'month': month.toString(),
+      }),
+      headers: {'Content-Type': 'application/json'},
+    );
+
+    if (response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body);
+      return data.map((e) => SaleResponse.fromJson(e)).toList();
+    } else {
+      throw Exception('Error fetching sales for $month/$year: ${response.statusCode}');
     }
   }
 
-  /// Elimina una venta por ID
-  Future<void> delete(int id) async {
-    final response = await _client.delete(
-      Uri.parse('$kApiBaseUrl/api/sales/delete/\$id'),
-      headers: {'Content-Type': 'application/json'},
-    );
-    if (response.statusCode != 200) {
-      throw Exception('Error deleting sale: \${response.statusCode}');
-    }
-  }
+
 }
