@@ -27,7 +27,7 @@ class User {
       'id': id,
       'name': name,
       'role': role,
-      'createdAt': createdAt.toIso8601String(),
+      'createdAt': createdAt.toString(),
     };
   }
 }

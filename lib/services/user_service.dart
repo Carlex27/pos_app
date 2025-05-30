@@ -1,0 +1,68 @@
+import 'dart:convert';
+import '../config.dart';
+import 'authenticated_client.dart';
+import '../models/user.dart';
+import '../models/user_registration.dart';
+
+/// Servicio para consumo de la API de Productos usando cliente autenticado
+class UserService {
+  final AuthenticatedClient _client;
+
+  UserService({AuthenticatedClient? client})
+      : _client = client ?? AuthenticatedClient();
+
+  /// Obtiene todos los usuarios
+  Future<List<User>> fetchAll() async {
+    final response = await _client.get(
+      Uri.parse('$kApiBaseUrl/api/user/all'),
+      headers: {'Content-Type': 'application/json'},
+    );
+    if (response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body);
+      return data.map((e) => User.fromJson(e)).toList();
+    } else {
+      throw Exception('Error fetching products: ${response.statusCode}');
+    }
+  }
+
+  Future<String> create(UserRegistration user) async {
+    final response = await _client.post(
+      Uri.parse('$kApiBaseUrl/auth/sign-up'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode(user.toJson()),
+    );
+    if (response.statusCode == 200) {
+      return "Usuario creado correctamente";
+    } else {
+      throw Exception('Error creating user: ${response.statusCode}');
+    }
+  }
+
+
+  /// Metodo search para buscar usuarios por nombre o rol
+  Future<List<User>> search(String query) async {
+    final response = await _client.get(
+      Uri.parse('$kApiBaseUrl/api/user/search')
+          .replace(queryParameters: {'query': query}),
+      headers: {'Content-Type': 'application/json'},
+    );
+    if (response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body);
+      return data.map((e) => User.fromJson(e)).toList();
+    } else {
+      throw Exception('Error fetching products: ${response.statusCode}');
+    }
+  }
+
+  /// Elimina un producto por ID
+  Future<void> delete(int id) async {
+    final response = await _client.delete(
+      Uri.parse('$kApiBaseUrl/api/user/delete/$id'),
+      headers: {'Content-Type': 'application/json'},
+    );
+    if (response.statusCode != 200) {
+      throw Exception('Error deleting product: ${response.statusCode}');
+    }
+  }
+
+}
