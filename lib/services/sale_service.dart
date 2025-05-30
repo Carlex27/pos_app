@@ -38,7 +38,7 @@ class SaleService {
     }
   }
 
-  /// Obtiene los detalles de una venta por ID
+  /// Obtiene las ventas de un día específico
   Future<List<SaleResponse>> fetchByDay(DateTime date) async {
     final String formattedDate = DateFormat('yyyy-MM-dd').format(date);
 
