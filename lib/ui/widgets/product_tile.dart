@@ -13,6 +13,14 @@ class ProductTile extends StatelessWidget {
     required this.product,
   }) : super(key: key);
 
+  Future<String> imageUrl(String? imagePath) async {
+    final baseUrl = await getApiBaseUrl();
+    if (imagePath == null || imagePath.isEmpty) {
+      return '$baseUrl/images/default.png'; // o lo que corresponda
+    }
+    return '$baseUrl$imagePath';
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -36,17 +44,23 @@ class ProductTile extends StatelessWidget {
       child: Row(
         children: [
           // Imagen del producto desde el backend
-          ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: product.imagePath != null
-                ? Image.network(
-              '$kApiBaseUrl${product.imagePath}',
-              width: 60,
-              height: 60,
-              fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => _placeholder(),
-            )
-                : _placeholder(),
+          FutureBuilder<String>(
+            future: imageUrl(product.imagePath), // función que incluye await getApiBaseUrl()
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return _placeholder(); // puedes mostrar un spinner o una imagen de carga
+              } else if (snapshot.hasError || !snapshot.hasData) {
+                return _placeholder(); // error o sin datos
+              } else {
+                return Image.network(
+                  snapshot.data!,
+                  width: 60,
+                  height: 60,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => _placeholder(),
+                );
+              }
+            },
           ),
 
           const SizedBox(width: 16),

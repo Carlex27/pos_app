@@ -1,8 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
-import 'package:mime/mime.dart';
-import 'package:path/path.dart';
 import '../config.dart';
 import 'authenticated_client.dart';
 
@@ -18,8 +16,9 @@ class ProductService {
 
   /// Obtiene todos los productos
   Future<List<Product>> fetchAll() async {
+    final baseUrl = await getApiBaseUrl();
     final response = await _client.get(
-      Uri.parse('$kApiBaseUrl/api/products/findAll'),
+      Uri.parse('$baseUrl/api/products/findAll'),
       headers: {'Content-Type': 'application/json'},
     );
     if (response.statusCode == 200) {
@@ -31,8 +30,9 @@ class ProductService {
   }
   /// Metodo search para buscar productos por nombre o SKU o marca
   Future<List<Product>> search(String query) async {
+    final baseUrl = await getApiBaseUrl();
     final response = await _client.get(
-      Uri.parse('$kApiBaseUrl/api/products/search')
+      Uri.parse('$baseUrl/api/products/search')
           .replace(queryParameters: {'query': query}),
       headers: {'Content-Type': 'application/json'},
     );
@@ -45,7 +45,8 @@ class ProductService {
   }
 
   Future<void> sendAltaProductos(List<AltaProduct> productos) async {
-    final uri = Uri.parse('$kApiBaseUrl/api/products/altaProducto');
+    final baseUrl = await getApiBaseUrl();
+    final uri = Uri.parse('$baseUrl/api/products/altaProducto');
 
     final response = await _client.post(
       uri,
@@ -72,7 +73,8 @@ class ProductService {
     required int stock,
     File? imageFile, // puede ser null
   }) async {
-    final uri = Uri.parse('$kApiBaseUrl/api/products/update')
+    final baseUrl = await getApiBaseUrl();
+    final uri = Uri.parse('$baseUrl/api/products/update')
         .replace(queryParameters: {'id': id.toString()});
 
     final request = http.MultipartRequest('PUT', uri);
@@ -105,8 +107,9 @@ class ProductService {
 
   /// Elimina un producto por ID
   Future<void> delete(int id) async {
+    final baseUrl = await getApiBaseUrl();
     final response = await _client.delete(
-      Uri.parse('$kApiBaseUrl/api/products/delete/$id'),
+      Uri.parse('$baseUrl/api/products/delete/$id'),
       headers: {'Content-Type': 'application/json'},
     );
     if (response.statusCode != 200) {
@@ -115,7 +118,7 @@ class ProductService {
   }
   /// Obtiene la URL completa de la imagen de un producto
   String getImageUrl(String filename) {
-    return '$kApiBaseUrl/images/$filename';
+    return '$getApiBaseUrl/images/$filename';
   }
 
   /// Envía un producto con imagen usando multipart/form-data
@@ -130,7 +133,8 @@ class ProductService {
     required int stock,
     required File imageFile,
   }) async {
-    final uri = Uri.parse('$kApiBaseUrl/api/products/create');
+    final baseUrl = await getApiBaseUrl();
+    final uri = Uri.parse('$getApiBaseUrl/api/products/create');
     final request = http.MultipartRequest('POST', uri);
 
     request.headers.addAll(await _client.getAuthHeaders());

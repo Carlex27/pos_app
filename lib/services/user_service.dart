@@ -13,8 +13,9 @@ class UserService {
 
   /// Obtiene todos los usuarios
   Future<List<User>> fetchAll() async {
+    final baseUrl = await getApiBaseUrl();
     final response = await _client.get(
-      Uri.parse('$kApiBaseUrl/api/user/all'),
+      Uri.parse('$baseUrl/api/user/all'),
       headers: {'Content-Type': 'application/json'},
     );
     print('Response body: ${response.body}');
@@ -27,8 +28,9 @@ class UserService {
   }
 
   Future<String> create(UserRegistration user) async {
+    final baseUrl = await getApiBaseUrl();
     final response = await _client.post(
-      Uri.parse('$kApiBaseUrl/auth/sign-up'),
+      Uri.parse('$baseUrl/auth/sign-up'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode(user.toJson()),
     );
@@ -42,8 +44,9 @@ class UserService {
 
   /// Metodo search para buscar usuarios por nombre o rol
   Future<List<User>> search(String query) async {
+    final baseUrl = await getApiBaseUrl();
     final response = await _client.get(
-      Uri.parse('$kApiBaseUrl/api/user/search')
+      Uri.parse('$baseUrl/api/user/search')
           .replace(queryParameters: {'q': query}),
       headers: {'Content-Type': 'application/json'},
     );
@@ -57,8 +60,9 @@ class UserService {
 
   /// Elimina un producto por ID
   Future<void> delete(int id) async {
+    final baseUrl = await getApiBaseUrl();
     final response = await _client.delete(
-      Uri.parse('$kApiBaseUrl/api/user/delete/id/$id'),
+      Uri.parse('$baseUrl/api/user/delete/id/$id'),
       headers: {'Content-Type': 'application/json'},
     );
     if (response.statusCode != 200) {
@@ -67,8 +71,9 @@ class UserService {
   }
 
   Future<String> update(UserRegistration user, int id) async {
+    final baseUrl = await getApiBaseUrl();
     final response = await _client.post(
-      Uri.parse('$kApiBaseUrl/api/user/update')
+      Uri.parse('$baseUrl/api/user/update')
       .replace(queryParameters: {'id': id.toString()}),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode(user.toJson()),

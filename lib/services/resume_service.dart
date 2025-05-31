@@ -16,10 +16,11 @@ class ResumeService {
 
   /// Obtiene el resumen de ventas del día actual
   Future<ResumeVentas> fetchResumeVentasByDay(DateTime date) async {
+    final baseUrl = await getApiBaseUrl();
     final String formattedDate = DateFormat('yyyy-MM-dd').format(date);
 
     final response = await _client.get(
-      Uri.parse('$kApiBaseUrl/api/resume/ResumeVentas')
+      Uri.parse('$baseUrl/api/resume/ResumeVentas')
           .replace(queryParameters: {'date': formattedDate}),
       headers: {'Content-Type': 'application/json'},
     );
@@ -33,10 +34,11 @@ class ResumeService {
 
   /// Obtiene el resumen del dashboard del día actual
   Future<ResumeDashboard> fetchResumeDashboardByDay(DateTime date) async {
+    final baseUrl = await getApiBaseUrl();
     final String formattedDate = DateFormat('yyyy-MM-dd').format(date);
 
     final response = await _client.get(
-      Uri.parse('$kApiBaseUrl/api/resume/ResumeDashboard')
+      Uri.parse('$baseUrl/api/resume/ResumeDashboard')
           .replace(queryParameters: {'date': formattedDate}),
       headers: {'Content-Type': 'application/json'},
     );
@@ -51,11 +53,12 @@ class ResumeService {
 
   /// Obtiene el resumen de ventas de un mes específico
   Future<ResumeVentas> fetchResumeVentasByMonth(DateTime date) async {
+    final baseUrl = await getApiBaseUrl();
     final int year = date.year;
     final int month = date.month;
 
     final response = await _client.get(
-      Uri.parse('$kApiBaseUrl/api/resume/ResumeVentasByMonth')
+      Uri.parse('$baseUrl/api/resume/ResumeVentasByMonth')
           .replace(queryParameters: {
         'year': year.toString(),
         'month': month.toString(),
@@ -72,11 +75,12 @@ class ResumeService {
 
   /// Obtiene el resumen del dashboard de un mes específico
   Future<ResumeDashboard> fetchResumeDashboardByMonth(DateTime date) async {
+    final baseUrl = await getApiBaseUrl();
     final int year = date.year;
     final int month = date.month;
 
     final response = await _client.get(
-      Uri.parse('$kApiBaseUrl/api/resume/ResumeDashboardByMonth')
+      Uri.parse('$baseUrl/api/resume/ResumeDashboardByMonth')
           .replace(queryParameters: {
         'year': year.toString(),
         'month': month.toString(),

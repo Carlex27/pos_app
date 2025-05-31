@@ -22,10 +22,11 @@ class AuthService {
   Future<String?> refreshToken() async {
     final refreshToken = await _storage.readRefreshToken();
     if (refreshToken == null) return null;
+    final baseUrl = await getApiBaseUrl();
 
     // Asume que tu endpoint espera la cookie de refresh; ajusta si usa header JSON
     final resp = await _client.get(
-      Uri.parse('$kApiBaseUrl/auth/refresh-token'),
+      Uri.parse('$baseUrl/auth/refresh-token'),
       headers: {
         'Cookie': 'refresh_token=$refreshToken',
       },
@@ -43,9 +44,10 @@ class AuthService {
 
   Future<void> login(String username, String password) async {
     final authHeader = _basicAuthHeader(username, password);
+    final baseUrl = await getApiBaseUrl();
 
     final resp = await _client.post(
-      Uri.parse('$kApiBaseUrl/auth/sign-in'),
+      Uri.parse('$baseUrl/auth/sign-in'),
       headers: {
         'Authorization': authHeader,
         'Content-Type': 'application/json',
