@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pos_app/ui/widgets/user_form.dart';
 import 'package:provider/provider.dart';
 import '../../services/auth_service.dart';
 import '../../services/user_service.dart';
@@ -253,8 +254,47 @@ class _UsersScreenState extends State<UsersScreen> {
         margin: const EdgeInsets.only(bottom: 5),
         child: FloatingActionButton.extended(
           onPressed: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Agregar usuario - En desarrollo')),
+            showDialog(
+              context: context,
+              builder: (_) => UserForm(
+                user: User(
+                  id: 0, // este valor no se usará al crear
+                  username: '',
+                  role: 'Vendedor', // por defecto
+                  createdAt: DateTime.now(),
+                ),
+                onSave: (username, password, selectedRole) async {
+                  try {
+                    final userService = Provider.of<UserService>(context, listen: false);
+                    await userService.create(
+                      UserRegistration(
+                        userName: username,
+                        userPassword: password,
+                        userRole: selectedRole,
+                      ),
+                    );
+
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Usuario creado correctamente'),
+                          backgroundColor: Colors.green,
+                        ),
+                      );
+                      _fetchUsers(); // actualizar lista
+                    }
+                  } catch (e) {
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Error al crear usuario: $e'),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    }
+                  }
+                },
+              ),
             );
           },
           backgroundColor: const Color(0xFFFF7043),
@@ -269,6 +309,7 @@ class _UsersScreenState extends State<UsersScreen> {
           ),
         ),
       ),
+
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }

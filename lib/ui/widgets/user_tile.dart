@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../models/user.dart';
-import 'edit_user_form.dart';
+import 'user_form.dart';
 
 class UserTile extends StatelessWidget {
   final User user;
@@ -119,7 +119,7 @@ class UserTile extends StatelessWidget {
                   onTap: () {
                     showDialog(
                       context: context,
-                      builder: (_) => EditUserForm(
+                      builder: (_) => UserForm(
                         user: user,
                         onSave: (username, password, selectedRole) {
                           if (onEdit != null) {
