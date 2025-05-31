@@ -117,8 +117,9 @@ class ProductService {
     }
   }
   /// Obtiene la URL completa de la imagen de un producto
-  String getImageUrl(String filename) {
-    return '$getApiBaseUrl/images/$filename';
+  Future<String> getImageUrl(String filename) async {
+    final baseUrl = await getApiBaseUrl();
+    return '$baseUrl/images/$filename';
   }
 
   /// Envía un producto con imagen usando multipart/form-data
@@ -134,7 +135,7 @@ class ProductService {
     required File imageFile,
   }) async {
     final baseUrl = await getApiBaseUrl();
-    final uri = Uri.parse('$getApiBaseUrl/api/products/create');
+    final uri = Uri.parse('$baseUrl/api/products/create');
     final request = http.MultipartRequest('POST', uri);
 
     request.headers.addAll(await _client.getAuthHeaders());
