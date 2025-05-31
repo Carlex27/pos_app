@@ -495,14 +495,14 @@ class _ProductTileState extends State<ProductTile>
   }
 
   Color _getStockColor() {
-    if (widget.product.stock <= 5) return Colors.red.shade600;
-    if (widget.product.stock <= 15) return Colors.orange.shade600;
+    if (widget.product.stock <= 10) return Colors.red.shade600;
+    if (widget.product.stock <= 20) return Colors.orange.shade600;
     return Colors.green.shade600;
   }
 
   IconData _getStockIcon() {
-    if (widget.product.stock <= 5) return Icons.warning_outlined;
-    if (widget.product.stock <= 15) return Icons.info_outlined;
+    if (widget.product.stock <= 10) return Icons.warning_outlined;
+    if (widget.product.stock <= 20) return Icons.info_outlined;
     return Icons.check_circle_outlined;
   }
 
