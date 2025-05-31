@@ -1,29 +1,29 @@
 class UserRegistration {
-  final String username;
-  final String password;
-  final String role;
+  final String userName;
+  final String userPassword;
+  final String userRole;
 
   UserRegistration({
-    required this.username,
-    required this.password,
-    required this.role,
+    required this.userName,
+    required this.userPassword,
+    required this.userRole,
   });
 
   // Constructor factory para crear desde JSON
   factory UserRegistration.fromJson(Map<String, dynamic> json) {
     return UserRegistration(
-      username: json['username'] as String,
-      password: json['password'] as String,
-      role: json['role'] as String,
+      userName: json['userName'] as String,
+      userPassword: json['userPassword'] as String,
+      userRole: json['userRole'] as String,
     );
   }
 
   // Método para convertir a JSON
   Map<String, dynamic> toJson() {
     return {
-      'username': username,
-      'password': password,
-      'role': role,
+      'userName': userName,
+      'userPassword': userPassword,
+      'userRole': userRole,
     };
   }
 }

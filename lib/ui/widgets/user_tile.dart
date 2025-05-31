@@ -1,13 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../models/user.dart';
+import 'edit_user_form.dart';
 
 class UserTile extends StatelessWidget {
   final User user;
+  final VoidCallback? onDelete;
+  final void Function(String username, String password, String selectedRole)? onEdit;
 
   const UserTile({
     Key? key,
     required this.user,
+    this.onDelete,
+    this.onEdit,
   }) : super(key: key);
 
   @override
@@ -108,34 +113,38 @@ class UserTile extends StatelessWidget {
             ),
 
             // Botones de acción
-            Row(
-              mainAxisSize: MainAxisSize.min,
+            Column(
               children: [
-                // Botón editar
-                IconButton(
-                  onPressed: () {
-                    // Aquí iría la funcionalidad de editar
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Editar ${user.username}')),
+                InkWell(
+                  onTap: () {
+                    showDialog(
+                      context: context,
+                      builder: (_) => EditUserForm(
+                        user: user,
+                        onSave: (username, password, selectedRole) {
+                          if (onEdit != null) {
+                            onEdit!(username, password, selectedRole);
+                          }
+                        },
+                      ),
                     );
                   },
-                  icon: const Icon(
-                    Icons.edit_outlined,
-                    size: 20,
-                  ),
-                  style: IconButton.styleFrom(
-                    backgroundColor: Colors.blue.shade50,
-                    foregroundColor: Colors.blue.shade600,
+                  child: Container(
                     padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade100,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Icon(
+                      Icons.edit_outlined,
+                      size: 18,
+                      color: Colors.grey.shade600,
+                    ),
                   ),
                 ),
-                const SizedBox(width: 8),
-
-                // Botón eliminar
+                const SizedBox(height: 8),
                 IconButton(
-                  onPressed: () {
-                    _showDeleteDialog(context);
-                  },
+                  onPressed: onDelete != null ? () => _showDeleteDialog(context) : null,
                   icon: const Icon(
                     Icons.delete_outline,
                     size: 20,
@@ -207,11 +216,10 @@ class UserTile extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             ),
             onPressed: () {
-              // Aquí iría la lógica para eliminar
               Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('${user.username} eliminado')),
-              );
+              if (onDelete != null) {
+                onDelete!();
+              }
             },
             child: const Text(
               'Eliminar',

@@ -3,9 +3,10 @@ import 'package:provider/provider.dart';
 import '../../services/auth_service.dart';
 import '../../services/user_service.dart';
 import '../../models/user.dart';
+import '../../models/user_registration.dart';
 import '../widgets/user_tile.dart';
 
-/// Pantalla de usuarios
+
 class UsersScreen extends StatefulWidget {
   const UsersScreen({Key? key}) : super(key: key);
 
@@ -39,15 +40,96 @@ class _UsersScreenState extends State<UsersScreen> {
     } catch (e) {
       debugPrint('Error fetching users: $e');
       setState(() => _isLoading = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error al cargar usuarios: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _deleteUser(int userId) async {
+    try {
+      await Provider.of<UserService>(context, listen: false).delete(userId);
+      _fetchUsers(_searchQuery);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Usuario eliminado correctamente'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('Error deleting user: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error al eliminar usuario: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
 
 
-  Future<void> _logout() async {
-    final auth = Provider.of<AuthService>(context, listen: false);
-    await auth.logout();
-    Navigator.of(context).pushReplacementNamed('/login');
+
+  Future<void> _showDeleteDialog(User user) async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: const Text('Confirmar eliminación'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text('¿Estás seguro de que deseas eliminar el usuario "${user.username}"?'),
+                const SizedBox(height: 8),
+                const Text(
+                  'Esta acción no se puede deshacer.',
+                  style: TextStyle(
+                    color: Colors.red,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Cancelar'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
+              ),
+              child: const Text('Eliminar'),
+              onPressed: () {
+                Navigator.of(context).pop();
+                _deleteUser(user.id);
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  String _formatDate(DateTime date) {
+    return '${date.day}/${date.month}/${date.year}';
   }
 
   @override
@@ -57,13 +139,11 @@ class _UsersScreenState extends State<UsersScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            // Header con título, búsqueda y logout
             Container(
               color: Colors.white,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
               child: Column(
                 children: [
-                  // Fila superior: Título y botón logout
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -78,8 +158,6 @@ class _UsersScreenState extends State<UsersScreen> {
                     ],
                   ),
                   const SizedBox(height: 16),
-
-                  // Campo de búsqueda
                   TextField(
                     decoration: InputDecoration(
                       hintText: 'Buscar usuario...',
@@ -119,8 +197,6 @@ class _UsersScreenState extends State<UsersScreen> {
                 ],
               ),
             ),
-
-            // Lista de usuarios
             Expanded(
               child: _isLoading
                   ? const Center(child: CircularProgressIndicator())
@@ -137,21 +213,46 @@ class _UsersScreenState extends State<UsersScreen> {
                   : ListView.builder(
                 padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
                 itemCount: _users.length,
-                itemBuilder: (context, index) => UserTile(
-                  user: _users[index],
-                ),
+                itemBuilder: (context, index) {
+                  final user = _users[index];
+                  return UserTile(
+                    user: user,
+                    onDelete: () => _showDeleteDialog(user),
+                    onEdit: (username, password, selectedRole) async {
+                      try {
+                        final userService = Provider.of<UserService>(context, listen: false);
+                        await userService.update(UserRegistration(
+                          userName: username,
+                          userPassword: password,
+                          userRole: selectedRole,
+                        ), user.id);
+                        _fetchUsers(); // para actualizar la lista
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Usuario actualizado correctamente'),
+                            backgroundColor: Colors.green,
+                          ),
+                        );
+                      } catch (e) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Error al actualizar usuario: $e'),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                      }
+                    },
+                  );
+                },
               ),
             ),
           ],
         ),
       ),
-
-      // Botón flotante para agregar usuario
       floatingActionButton: Container(
-        margin: const EdgeInsets.only(bottom: 50),
+        margin: const EdgeInsets.only(bottom: 5),
         child: FloatingActionButton.extended(
           onPressed: () {
-            // Aquí iría el diálogo o navegación para agregar usuario
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('Agregar usuario - En desarrollo')),
             );

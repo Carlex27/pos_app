@@ -44,7 +44,7 @@ class UserService {
   Future<List<User>> search(String query) async {
     final response = await _client.get(
       Uri.parse('$kApiBaseUrl/api/user/search')
-          .replace(queryParameters: {'query': query}),
+          .replace(queryParameters: {'q': query}),
       headers: {'Content-Type': 'application/json'},
     );
     if (response.statusCode == 200) {
@@ -58,11 +58,25 @@ class UserService {
   /// Elimina un producto por ID
   Future<void> delete(int id) async {
     final response = await _client.delete(
-      Uri.parse('$kApiBaseUrl/api/user/delete/$id'),
+      Uri.parse('$kApiBaseUrl/api/user/delete/id/$id'),
       headers: {'Content-Type': 'application/json'},
     );
     if (response.statusCode != 200) {
       throw Exception('Error deleting product: ${response.statusCode}');
+    }
+  }
+
+  Future<String> update(UserRegistration user, int id) async {
+    final response = await _client.post(
+      Uri.parse('$kApiBaseUrl/api/user/update')
+      .replace(queryParameters: {'id': id.toString()}),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode(user.toJson()),
+    );
+    if (response.statusCode == 200) {
+      return "Usuario actualizado correctamente";
+    } else {
+      throw Exception('Error creating user: ${response.statusCode}');
     }
   }
 
