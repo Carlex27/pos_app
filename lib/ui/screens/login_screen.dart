@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pos_app/ui/widgets/backend_editor.dart';
 import 'package:provider/provider.dart';
 import '../../services/auth_service.dart';
 
@@ -260,8 +261,11 @@ class _LoginScreenState extends State<LoginScreen> {
                               : const Text('Iniciar Sesión'),
                         ),
                       ),
+
                       const SizedBox(height: 16),
-                    ],
+                      BackendConfigEditor(),
+                    ]
+
                   ),
                 ),
               ),

@@ -44,11 +44,8 @@ class _NewProductFormState extends State<NewProductForm> {
           backgroundColor: Colors.red.shade400,
         ),
       );
-      // Puedes abrir ajustes si lo deseas:
-      // openAppSettings();
     }
   }
-
 
   @override
   void dispose() {
@@ -101,7 +98,7 @@ class _NewProductFormState extends State<NewProductForm> {
           ),
         );
 
-        Navigator.of(context).pop(); // cerrar modal
+        Navigator.of(context).pop();
 
       } catch (e) {
         print('Error al crear producto: $e');
@@ -121,130 +118,229 @@ class _NewProductFormState extends State<NewProductForm> {
   Widget build(BuildContext context) {
     return Dialog(
       insetPadding: const EdgeInsets.all(16),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Scaffold(
-        backgroundColor: Colors.grey[50],
-        appBar: AppBar(
-          title: const Text(
-            'Nuevo Producto',
-            style: TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.w600,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 20,
+              offset: const Offset(0, 8),
             ),
-          ),
-          backgroundColor: Colors.orange.shade600,
-          elevation: 0,
-          iconTheme: const IconThemeData(color: Colors.white),
+          ],
         ),
-        body: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // Imagen seleccionada
-                if (_selectedImage != null)
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Header con icono
                   Container(
-                    height: 150,
-                    margin: const EdgeInsets.only(bottom: 16),
+                    width: 60,
+                    height: 60,
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.grey.shade300),
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          const Color(0xFFFFB74D).withOpacity(0.8),
+                          const Color(0xFFFF8A65).withOpacity(0.8),
+                        ],
+                      ),
+                      borderRadius: BorderRadius.circular(30),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
+                          color: const Color(0xFFFFB74D).withOpacity(0.3),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
                         ),
                       ],
-                      image: DecorationImage(
-                        image: FileImage(_selectedImage!),
-                        fit: BoxFit.cover,
-                      ),
+                    ),
+                    child: const Icon(
+                      Icons.add_box_outlined,
+                      color: Colors.white,
+                      size: 28,
                     ),
                   ),
-
-                // Botón seleccionar imagen
-                Container(
-                  margin: const EdgeInsets.only(bottom: 24),
-                  child: OutlinedButton.icon(
-                    onPressed: _pickImage,
-                    icon: Icon(
-                      Icons.image_outlined,
-                      color: Colors.orange.shade600,
-                    ),
-                    label: Text(
-                      _selectedImage == null ? 'Seleccionar Imagen' : 'Cambiar Imagen',
-                      style: TextStyle(
-                        color: Colors.orange.shade600,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      side: BorderSide(color: Colors.orange.shade600),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                  ),
-                ),
-
-                // Campos del formulario
-                _buildTextField(_skuController, 'SKU', TextInputType.text),
-                _buildTextField(_nombreController, 'Nombre', TextInputType.text),
-                _buildTextField(_marcaController, 'Marca', TextInputType.text),
-                _buildTextField(_gradosController, 'Grados de alcohol', TextInputType.number),
-                _buildTextField(_tamanioController, 'Tamaño', TextInputType.text),
-                _buildTextField(_precioNormalController, 'Precio Normal', TextInputType.number),
-                _buildTextField(_precioMayoreoController, 'Precio Mayoreo', TextInputType.number),
-                _buildTextField(_stockController, 'Stock', TextInputType.number),
-
-                const SizedBox(height: 32),
-
-                // Botón Guardar
-                ElevatedButton(
-                  onPressed: _submitForm,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.orange.shade600,
-                    foregroundColor: Colors.white,
-                    elevation: 0,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  child: const Text(
-                    'Guardar Producto',
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Nuevo Producto',
                     style: TextStyle(
-                      fontSize: 16,
+                      fontSize: 20,
                       fontWeight: FontWeight.w600,
+                      color: Color(0xFF8D4E2A),
                     ),
                   ),
-                ),
+                  const SizedBox(height: 24),
 
-                const SizedBox(height: 12),
+                  // Sección de imagen
+                  Container(
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade50,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.grey.shade300),
+                    ),
+                    child: Column(
+                      children: [
+                        if (_selectedImage != null)
+                          Container(
+                            height: 120,
+                            width: double.infinity,
+                            margin: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(8),
+                              image: DecorationImage(
+                                image: FileImage(_selectedImage!),
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                          )
+                        else
+                          Container(
+                            height: 80,
+                            margin: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: Colors.grey.shade100,
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                color: Colors.grey.shade300,
+                                style: BorderStyle.solid,
+                              ),
+                            ),
+                            child: Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.image_outlined,
+                                    size: 32,
+                                    color: Colors.grey.shade400,
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'Sin imagen',
+                                    style: TextStyle(
+                                      color: Colors.grey.shade500,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
 
-                // Botón Cancelar
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  style: TextButton.styleFrom(
-                    foregroundColor: Colors.grey.shade600,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+                          child: OutlinedButton.icon(
+                            onPressed: _pickImage,
+                            icon: const Icon(Icons.photo_library_outlined),
+                            label: Text(_selectedImage == null ? 'Seleccionar Imagen' : 'Cambiar Imagen'),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: const Color(0xFFFFB74D),
+                              side: const BorderSide(color: Color(0xFFFFB74D)),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  child: const Text(
-                    'Cancelar',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                    ),
+                  const SizedBox(height: 16),
+
+                  // Campos del formulario en filas de 2
+                  Row(
+                    children: [
+                      Expanded(child: _buildTextField(_skuController, 'SKU', TextInputType.text, Icons.qr_code_outlined)),
+                      const SizedBox(width: 12),
+                      Expanded(child: _buildTextField(_nombreController, 'Nombre', TextInputType.text, Icons.label_outline)),
+                    ],
                   ),
-                ),
-              ],
+                  const SizedBox(height: 16),
+
+                  Row(
+                    children: [
+                      Expanded(child: _buildTextField(_marcaController, 'Marca', TextInputType.text, Icons.business_outlined)),
+                      const SizedBox(width: 12),
+                      Expanded(child: _buildTextField(_tamanioController, 'Tamaño', TextInputType.text, Icons.straighten_outlined)),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+
+                  Row(
+                    children: [
+                      Expanded(child: _buildTextField(_gradosController, 'Grados', TextInputType.number, Icons.local_bar_outlined)),
+                      const SizedBox(width: 12),
+                      Expanded(child: _buildTextField(_stockController, 'Stock', TextInputType.number, Icons.inventory_2_outlined)),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+
+                  Row(
+                    children: [
+                      Expanded(child: _buildTextField(_precioNormalController, 'Precio Normal', TextInputType.number, Icons.attach_money_outlined)),
+                      const SizedBox(width: 12),
+                      Expanded(child: _buildTextField(_precioMayoreoController, 'Precio Mayoreo', TextInputType.number, Icons.money_off_outlined)),
+                    ],
+                  ),
+                  const SizedBox(height: 32),
+
+                  // Botones
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      // Botón Cancelar
+                      TextButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        style: TextButton.styleFrom(
+                          foregroundColor: Colors.grey[600],
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 12,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            side: BorderSide(color: Colors.grey.shade300),
+                          ),
+                        ),
+                        child: const Text(
+                          'Cancelar',
+                          style: TextStyle(fontWeight: FontWeight.w500),
+                        ),
+                      ),
+
+                      // Botón Guardar
+                      ElevatedButton(
+                        onPressed: _submitForm,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFFFB74D),
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 32,
+                            vertical: 12,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        child: const Text(
+                          'Guardar',
+                          style: TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -252,43 +348,45 @@ class _NewProductFormState extends State<NewProductForm> {
     );
   }
 
-  Widget _buildTextField(TextEditingController controller, String label, TextInputType type) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      child: TextFormField(
-        controller: controller,
-        keyboardType: type,
-        style: const TextStyle(fontSize: 16),
-        decoration: InputDecoration(
-          labelText: label,
-          labelStyle: TextStyle(color: Colors.grey.shade600),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
-            borderSide: BorderSide(color: Colors.grey.shade300),
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
-            borderSide: BorderSide(color: Colors.grey.shade300),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
-            borderSide: BorderSide(color: Colors.orange.shade600),
-          ),
-          errorBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
-            borderSide: BorderSide(color: Colors.red.shade400),
-          ),
-          filled: true,
-          fillColor: Colors.white,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+  Widget _buildTextField(TextEditingController controller, String label, TextInputType type, IconData icon) {
+    return TextFormField(
+      controller: controller,
+      keyboardType: type,
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: TextStyle(color: Colors.grey[600]),
+        prefixIcon: Icon(
+          icon,
+          color: Colors.grey[600],
         ),
-        validator: (value) {
-          if (value == null || value.isEmpty) {
-            return 'Este campo es obligatorio';
-          }
-          return null;
-        },
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.grey.shade300),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.grey.shade300),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(
+            color: Color(0xFFFFB74D),
+            width: 2,
+          ),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.red.shade400),
+        ),
+        filled: true,
+        fillColor: Colors.grey.shade50,
       ),
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Campo requerido';
+        }
+        return null;
+      },
     );
   }
 }

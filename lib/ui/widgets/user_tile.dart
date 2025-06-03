@@ -1,13 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../models/user.dart';
+import 'user_form.dart';
 
 class UserTile extends StatelessWidget {
   final User user;
+  final VoidCallback? onDelete;
+  final void Function(String username, String password, String selectedRole)? onEdit;
 
   const UserTile({
     Key? key,
     required this.user,
+    this.onDelete,
+    this.onEdit,
   }) : super(key: key);
 
   @override
@@ -46,7 +51,7 @@ class UserTile extends StatelessWidget {
               ),
               child: Center(
                 child: Text(
-                  user.name.isNotEmpty ? user.name[0].toUpperCase() : 'U',
+                  user.username.isNotEmpty ? user.username[0].toUpperCase() : 'U',
                   style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.w600,
@@ -64,7 +69,7 @@ class UserTile extends StatelessWidget {
                 children: [
                   // Nombre del usuario
                   Text(
-                    user.name,
+                    user.username,
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
@@ -107,43 +112,74 @@ class UserTile extends StatelessWidget {
               ),
             ),
 
-            // Botones de acción
-            Row(
-              mainAxisSize: MainAxisSize.min,
+            // Botones de acción con el mismo estilo del ProductTile
+            Column(
               children: [
                 // Botón editar
-                IconButton(
-                  onPressed: () {
-                    // Aquí iría la funcionalidad de editar
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Editar ${user.name}')),
-                    );
-                  },
-                  icon: const Icon(
-                    Icons.edit_outlined,
-                    size: 20,
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.green.shade50,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: Colors.green.shade200,
+                      width: 1,
+                    ),
                   ),
-                  style: IconButton.styleFrom(
-                    backgroundColor: Colors.blue.shade50,
-                    foregroundColor: Colors.blue.shade600,
-                    padding: const EdgeInsets.all(8),
+                  child: InkWell(
+                    onTap: () {
+                      showDialog(
+                        context: context,
+                        builder: (_) => UserForm(
+                          user: user,
+                          onSave: (username, password, selectedRole) {
+                            if (onEdit != null) {
+                              onEdit!(username, password, selectedRole);
+                            }
+                          },
+                        ),
+                      );
+                    },
+                    borderRadius: BorderRadius.circular(8),
+                    child: Icon(
+                      Icons.edit_outlined,
+                      size: 18,
+                      color: Colors.green.shade600,
+                    ),
                   ),
                 ),
-                const SizedBox(width: 8),
+
+                const SizedBox(height: 8),
 
                 // Botón eliminar
-                IconButton(
-                  onPressed: () {
-                    _showDeleteDialog(context);
-                  },
-                  icon: const Icon(
-                    Icons.delete_outline,
-                    size: 20,
+                Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Colors.red.shade400, Colors.red.shade600],
+                    ),
+                    borderRadius: BorderRadius.circular(10),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.red.withOpacity(0.3),
+                        blurRadius: 6,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
                   ),
-                  style: IconButton.styleFrom(
-                    backgroundColor: Colors.red.shade50,
-                    foregroundColor: Colors.red.shade600,
-                    padding: const EdgeInsets.all(8),
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: onDelete != null ? () => _showDeleteDialog(context) : null,
+                      borderRadius: BorderRadius.circular(10),
+                      child: const Padding(
+                        padding: EdgeInsets.all(10),
+                        child: Icon(
+                          Icons.delete_outline,
+                          size: 20,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
                   ),
                 ),
               ],
@@ -158,7 +194,7 @@ class UserTile extends StatelessWidget {
     switch (role.toLowerCase()) {
       case 'administrador':
         return Colors.red.shade600;
-      case 'empleado':
+      case 'vendedor':
         return Colors.blue.shade600;
       case 'supervisor':
         return Colors.green.shade600;
@@ -182,7 +218,7 @@ class UserTile extends StatelessWidget {
           ),
         ),
         content: Text(
-          '¿Estás seguro de que deseas eliminar a ${user.name}?',
+          '¿Estás seguro de que deseas eliminar a ${user.username}?',
           style: const TextStyle(fontSize: 16),
         ),
         actions: [
@@ -207,11 +243,10 @@ class UserTile extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             ),
             onPressed: () {
-              // Aquí iría la lógica para eliminar
               Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('${user.name} eliminado')),
-              );
+              if (onDelete != null) {
+                onDelete!();
+              }
             },
             child: const Text(
               'Eliminar',

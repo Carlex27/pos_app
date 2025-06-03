@@ -13,10 +13,12 @@ class UserService {
 
   /// Obtiene todos los usuarios
   Future<List<User>> fetchAll() async {
+    final baseUrl = await getApiBaseUrl();
     final response = await _client.get(
-      Uri.parse('$kApiBaseUrl/api/user/all'),
+      Uri.parse('$baseUrl/api/user/all'),
       headers: {'Content-Type': 'application/json'},
     );
+    print('Response body: ${response.body}');
     if (response.statusCode == 200) {
       final List<dynamic> data = jsonDecode(response.body);
       return data.map((e) => User.fromJson(e)).toList();
@@ -26,8 +28,9 @@ class UserService {
   }
 
   Future<String> create(UserRegistration user) async {
+    final baseUrl = await getApiBaseUrl();
     final response = await _client.post(
-      Uri.parse('$kApiBaseUrl/auth/sign-up'),
+      Uri.parse('$baseUrl/auth/sign-up'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode(user.toJson()),
     );
@@ -41,9 +44,10 @@ class UserService {
 
   /// Metodo search para buscar usuarios por nombre o rol
   Future<List<User>> search(String query) async {
+    final baseUrl = await getApiBaseUrl();
     final response = await _client.get(
-      Uri.parse('$kApiBaseUrl/api/user/search')
-          .replace(queryParameters: {'query': query}),
+      Uri.parse('$baseUrl/api/user/search')
+          .replace(queryParameters: {'q': query}),
       headers: {'Content-Type': 'application/json'},
     );
     if (response.statusCode == 200) {
@@ -56,12 +60,28 @@ class UserService {
 
   /// Elimina un producto por ID
   Future<void> delete(int id) async {
+    final baseUrl = await getApiBaseUrl();
     final response = await _client.delete(
-      Uri.parse('$kApiBaseUrl/api/user/delete/$id'),
+      Uri.parse('$baseUrl/api/user/delete/id/$id'),
       headers: {'Content-Type': 'application/json'},
     );
     if (response.statusCode != 200) {
       throw Exception('Error deleting product: ${response.statusCode}');
+    }
+  }
+
+  Future<String> update(UserRegistration user, int id) async {
+    final baseUrl = await getApiBaseUrl();
+    final response = await _client.post(
+      Uri.parse('$baseUrl/api/user/update')
+      .replace(queryParameters: {'id': id.toString()}),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode(user.toJson()),
+    );
+    if (response.statusCode == 200) {
+      return "Usuario actualizado correctamente";
+    } else {
+      throw Exception('Error creating user: ${response.statusCode}');
     }
   }
 

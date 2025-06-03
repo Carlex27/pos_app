@@ -94,7 +94,6 @@ class _AltaProductWidgetState extends State<AltaProductWidget> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[50],
-      // SOLUCIÓN 1: Configurar resizeToAvoidBottomInset
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
         title: const Text(
@@ -104,407 +103,546 @@ class _AltaProductWidgetState extends State<AltaProductWidget> {
             fontWeight: FontWeight.w600,
           ),
         ),
-        backgroundColor: Colors.orange.shade600,
+        backgroundColor: const Color(0xFFFFB74D),
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: Column(
         children: [
-          // Header con descripción
+          // Header con icono y descripción elegante
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
               color: Colors.white,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  blurRadius: 10,
-                  offset: const Offset(0, 2),
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 20,
+                  offset: const Offset(0, 8),
                 ),
               ],
             ),
-            child: Text(
-              'Busca productos por SKU y agrega las cantidades recibidas',
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey.shade600,
-                height: 1.4,
-              ),
-              textAlign: TextAlign.center,
+            child: Column(
+              children: [
+                // Icono con gradiente como en EditProductForm
+                Container(
+                  width: 60,
+                  height: 60,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        const Color(0xFFFFB74D).withOpacity(0.8),
+                        const Color(0xFFFF8A65).withOpacity(0.8),
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(30),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFFFFB74D).withOpacity(0.3),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: const Icon(
+                    Icons.inventory_2_outlined,
+                    color: Colors.white,
+                    size: 28,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Busca productos por SKU y agrega las cantidades recibidas',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.grey.shade600,
+                    height: 1.4,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
             ),
           ),
 
-          // SOLUCIÓN 2: Envolver el contenido principal en Flexible en lugar de Expanded
           Flexible(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.all(24),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Título y campo de búsqueda
-                  const Text(
-                    'Buscar por SKU o Nombre',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.black87,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-
-                  // Campo de búsqueda
+                  // Sección de búsqueda con diseño mejorado
                   Container(
+                    width: double.infinity,
                     decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
-                          blurRadius: 10,
-                          offset: const Offset(0, 2),
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 20,
+                          offset: const Offset(0, 8),
                         ),
                       ],
                     ),
-                    child: TextField(
-                      controller: _searchController,
-                      style: const TextStyle(fontSize: 16),
-                      decoration: InputDecoration(
-                        hintText: 'Ej: COR001, MOD001...',
-                        hintStyle: TextStyle(
-                          color: Colors.grey.shade400,
-                          fontSize: 16,
-                        ),
-                        prefixIcon: Icon(
-                          Icons.search,
-                          color: Colors.grey.shade400,
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: Colors.grey.shade300),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: Colors.grey.shade300),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: Colors.orange.shade600, width: 2),
-                        ),
-                        filled: true,
-                        fillColor: Colors.white,
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                      ),
-                      onChanged: (value) {
-                        _searchQuery = value;
-                        _onSearchChanged(_searchQuery);
-                      },
-                    ),
-                  ),
-
-                  // Sugerencias de búsqueda
-                  if (_suggestions.isNotEmpty) ...[
-                    const SizedBox(height: 16),
-                    Container(
-                      constraints: const BoxConstraints(maxHeight: 200),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.grey.shade200),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
-                            blurRadius: 10,
-                            offset: const Offset(0, 2),
+                    child: Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Buscar Producto',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF8D4E2A),
+                            ),
                           ),
+                          const SizedBox(height: 16),
+
+                          // Campo de búsqueda mejorado
+                          TextFormField(
+                            controller: _searchController,
+                            style: const TextStyle(fontSize: 16),
+                            decoration: InputDecoration(
+                              hintText: 'Ingresa SKU o nombre del producto...',
+                              hintStyle: TextStyle(color: Colors.grey[600]),
+                              prefixIcon: Icon(
+                                Icons.search,
+                                color: Colors.grey[600],
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide(color: Colors.grey.shade300),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide(color: Colors.grey.shade300),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: const BorderSide(
+                                  color: Color(0xFFFFB74D),
+                                  width: 2,
+                                ),
+                              ),
+                              filled: true,
+                              fillColor: Colors.grey.shade50,
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                            ),
+                            onChanged: (value) {
+                              _searchQuery = value;
+                              _onSearchChanged(_searchQuery);
+                            },
+                          ),
+
+                          // Sugerencias de búsqueda mejoradas
+                          if (_suggestions.isNotEmpty) ...[
+                            const SizedBox(height: 16),
+                            Container(
+                              constraints: const BoxConstraints(maxHeight: 200),
+                              decoration: BoxDecoration(
+                                color: Colors.grey.shade50,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: Colors.grey.shade300),
+                              ),
+                              child: ListView.separated(
+                                shrinkWrap: true,
+                                itemCount: _suggestions.length,
+                                separatorBuilder: (context, index) => Divider(
+                                  height: 1,
+                                  color: Colors.grey.shade200,
+                                ),
+                                itemBuilder: (context, index) {
+                                  final p = _suggestions[index];
+                                  return ListTile(
+                                    title: Text(
+                                      p.nombre,
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.w500,
+                                        fontSize: 15,
+                                      ),
+                                    ),
+                                    subtitle: Text(
+                                      'SKU: ${p.SKU} | ${p.marca} - ${p.tamanio}',
+                                      style: TextStyle(
+                                        color: Colors.grey.shade600,
+                                        fontSize: 13,
+                                      ),
+                                    ),
+                                    trailing: Container(
+                                      width: 32,
+                                      height: 32,
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFFFB74D),
+                                        borderRadius: BorderRadius.circular(16),
+                                      ),
+                                      child: const Icon(
+                                        Icons.add,
+                                        color: Colors.white,
+                                        size: 18,
+                                      ),
+                                    ),
+                                    onTap: () => _addToAltaList(p),
+                                  );
+                                },
+                              ),
+                            ),
+                          ],
                         ],
                       ),
-                      child: ListView.separated(
-                        shrinkWrap: true,
-                        itemCount: _suggestions.length,
-                        separatorBuilder: (context, index) => Divider(
-                          height: 1,
-                          color: Colors.grey.shade100,
-                        ),
-                        itemBuilder: (context, index) {
-                          final p = _suggestions[index];
-                          return ListTile(
-                            title: Text(
-                              p.nombre,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w500,
-                                fontSize: 15,
-                              ),
-                            ),
-                            subtitle: Text(
-                              'SKU: ${p.SKU} | ${p.marca} - ${p.tamanio}',
-                              style: TextStyle(
-                                color: Colors.grey.shade600,
-                                fontSize: 13,
-                              ),
-                            ),
-                            onTap: () => _addToAltaList(p),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: index == 0
-                                  ? const BorderRadius.only(
-                                topLeft: Radius.circular(12),
-                                topRight: Radius.circular(12),
-                              )
-                                  : index == _suggestions.length - 1
-                                  ? const BorderRadius.only(
-                                bottomLeft: Radius.circular(12),
-                                bottomRight: Radius.circular(12),
-                              )
-                                  : BorderRadius.zero,
-                            ),
-                          );
-                        },
-                      ),
                     ),
-                  ],
+                  ),
 
                   const SizedBox(height: 24),
 
-                  // Título de productos seleccionados
-                  const Text(
-                    'Productos Seleccionados',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.black87,
+                  // Sección de productos seleccionados
+                  Container(
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 20,
+                          offset: const Offset(0, 8),
+                        ),
+                      ],
                     ),
-                  ),
-                  const SizedBox(height: 12),
-
-                  // Lista de productos seleccionados
-                  // SOLUCIÓN 3: Usar constraints y shrinkWrap en lugar de Expanded
-                  _altaList.isEmpty
-                      ? Container(
-                    height: 200, // Altura fija para el estado vacío
-                    child: Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(20),
                       child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Icon(
-                            Icons.inventory_2_outlined,
-                            size: 64,
-                            color: Colors.grey.shade300,
+                          Row(
+                            children: [
+                              const Text(
+                                'Productos Seleccionados',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFF8D4E2A),
+                                ),
+                              ),
+                              if (_altaList.isNotEmpty) ...[
+                                const SizedBox(width: 12),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFFFB74D),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Text(
+                                    '${_altaList.length}',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ],
                           ),
                           const SizedBox(height: 16),
-                          Text(
-                            'No hay productos seleccionados',
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: Colors.grey.shade500,
+
+                          _altaList.isEmpty
+                              ? Container(
+                            height: 200,
+                            child: Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.inventory_2_outlined,
+                                    size: 64,
+                                    color: Colors.grey.shade300,
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    'No hay productos seleccionados',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      color: Colors.grey.shade500,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    'Busca y selecciona productos para agregar',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.grey.shade400,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Busca y selecciona productos para agregar',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.grey.shade400,
-                            ),
+                          )
+                              : ListView.builder(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: _altaList.length,
+                            itemBuilder: (context, index) {
+                              final item = _altaList[index];
+                              return Container(
+                                margin: const EdgeInsets.only(bottom: 16),
+                                decoration: BoxDecoration(
+                                  color: Colors.grey.shade50,
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(color: Colors.grey.shade300),
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(16),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      // Header con nombre y botón eliminar
+                                      Row(
+                                        children: [
+                                          Expanded(
+                                            child: Text(
+                                              item.nombre,
+                                              style: const TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w600,
+                                                color: Colors.black87,
+                                              ),
+                                            ),
+                                          ),
+                                          Container(
+                                            width: 32,
+                                            height: 32,
+                                            decoration: BoxDecoration(
+                                              color: Colors.red.shade50,
+                                              borderRadius: BorderRadius.circular(16),
+                                              border: Border.all(color: Colors.red.shade200),
+                                            ),
+                                            child: IconButton(
+                                              icon: Icon(
+                                                Icons.close,
+                                                color: Colors.red.shade400,
+                                                size: 16,
+                                              ),
+                                              onPressed: () => setState(() => _altaList.removeAt(index)),
+                                              padding: EdgeInsets.zero,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+
+                                      const SizedBox(height: 8),
+
+                                      // Información del producto
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          borderRadius: BorderRadius.circular(8),
+                                          border: Border.all(color: Colors.grey.shade200),
+                                        ),
+                                        child: Row(
+                                          children: [
+                                            Icon(
+                                              Icons.qr_code_outlined,
+                                              size: 16,
+                                              color: Colors.grey.shade600,
+                                            ),
+                                            const SizedBox(width: 8),
+                                            Text(
+                                              'SKU: ${item.sku}',
+                                              style: TextStyle(
+                                                color: Colors.grey.shade700,
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                            ),
+                                            const SizedBox(width: 16),
+                                            Icon(
+                                              Icons.inventory_outlined,
+                                              size: 16,
+                                              color: Colors.grey.shade600,
+                                            ),
+                                            const SizedBox(width: 8),
+                                            Text(
+                                              'Stock: ${item.stock}',
+                                              style: TextStyle(
+                                                color: Colors.grey.shade700,
+                                                fontSize: 14,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+
+                                      const SizedBox(height: 16),
+
+                                      // Campo de cantidad simplificado
+                                      Row(
+                                        children: [
+                                          Text(
+                                            'Cantidad a agregar:',
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w500,
+                                              color: Colors.grey.shade700,
+                                            ),
+                                          ),
+                                          const Spacer(),
+                                          Container(
+                                            width: 80,
+                                            child: TextFormField(
+                                              initialValue: item.cantidad.toString(),
+                                              keyboardType: TextInputType.number,
+                                              textAlign: TextAlign.center,
+                                              style: const TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                              decoration: InputDecoration(
+                                                contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+                                                border: OutlineInputBorder(
+                                                  borderRadius: BorderRadius.circular(8),
+                                                  borderSide: BorderSide(color: Colors.grey.shade300),
+                                                ),
+                                                focusedBorder: OutlineInputBorder(
+                                                  borderRadius: BorderRadius.circular(8),
+                                                  borderSide: const BorderSide(color: Color(0xFFFFB74D), width: 2),
+                                                ),
+                                                filled: true,
+                                                fillColor: Colors.white,
+                                              ),
+                                              onChanged: (value) {
+                                                final parsed = int.tryParse(value);
+                                                if (parsed != null && parsed > 0) {
+                                                  setState(() => item.cantidad = parsed);
+                                                }
+                                              },
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+
+                                      const SizedBox(height: 12),
+
+                                      // Nuevo stock destacado
+                                      Container(
+                                        width: double.infinity,
+                                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                        decoration: BoxDecoration(
+                                          color: Colors.green.shade50,
+                                          borderRadius: BorderRadius.circular(8),
+                                          border: Border.all(color: Colors.green.shade200),
+                                        ),
+                                        child: Row(
+                                          children: [
+                                            Icon(
+                                              Icons.trending_up,
+                                              size: 16,
+                                              color: Colors.green.shade600,
+                                            ),
+                                            const SizedBox(width: 8),
+                                            Text(
+                                              'Nuevo stock: ${item.stock + item.cantidad}',
+                                              style: TextStyle(
+                                                color: Colors.green.shade700,
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
                           ),
                         ],
                       ),
                     ),
-                  )
-                      : ListView.builder(
-                    shrinkWrap: true, // IMPORTANTE: Permite que el ListView se ajuste al contenido
-                    physics: const NeverScrollableScrollPhysics(), // Evita conflictos de scroll
-                    itemCount: _altaList.length,
-                    itemBuilder: (context, index) {
-                      final item = _altaList[index];
-                      return Container(
-                        margin: const EdgeInsets.only(bottom: 12),
-                        decoration: BoxDecoration(
-                          color: Colors.green.shade50,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.green.shade100),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(16),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              // Header con nombre y botón eliminar
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: Text(
-                                      item.nombre,
-                                      style: const TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w600,
-                                        color: Colors.black87,
-                                      ),
-                                    ),
-                                  ),
-                                  IconButton(
-                                    icon: Icon(
-                                      Icons.close,
-                                      color: Colors.red.shade400,
-                                      size: 20,
-                                    ),
-                                    onPressed: () => setState(() => _altaList.removeAt(index)),
-                                    padding: EdgeInsets.zero,
-                                    constraints: const BoxConstraints(
-                                      minWidth: 32,
-                                      minHeight: 32,
-                                    ),
-                                  ),
-                                ],
-                              ),
-
-                              // Información del producto
-                              Text(
-                                'SKU: ${item.sku} | Stock actual: ${item.stock}',
-                                style: TextStyle(
-                                  color: Colors.grey.shade600,
-                                  fontSize: 14,
-                                ),
-                              ),
-                              const SizedBox(height: 16),
-
-                              // Controles de cantidad
-                              Row(
-                                children: [
-                                  // Botón decrementar
-                                  Container(
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius: BorderRadius.circular(8),
-                                      border: Border.all(color: Colors.grey.shade300),
-                                    ),
-                                    child: IconButton(
-                                      onPressed: item.cantidad > 1
-                                          ? () => setState(() => item.cantidad--)
-                                          : null,
-                                      icon: const Icon(Icons.remove, size: 18),
-                                      padding: const EdgeInsets.all(8),
-                                      constraints: const BoxConstraints(
-                                        minWidth: 40,
-                                        minHeight: 40,
-                                      ),
-                                    ),
-                                  ),
-
-                                  // Campo de cantidad
-                                  Container(
-                                    width: 60,
-                                    height: 40,
-                                    margin: const EdgeInsets.symmetric(horizontal: 12),
-                                    child: TextFormField(
-                                      initialValue: item.cantidad.toString(),
-                                      keyboardType: TextInputType.number,
-                                      textAlign: TextAlign.center,
-                                      decoration: InputDecoration(
-                                        contentPadding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
-                                        border: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(8),
-                                          borderSide: BorderSide(color: Colors.grey.shade300),
-                                        ),
-                                      ),
-                                      onChanged: (value) {
-                                        final parsed = int.tryParse(value);
-                                        if (parsed != null && parsed > 0) {
-                                          setState(() => item.cantidad = parsed);
-                                        }
-                                      },
-                                    ),
-                                  ),
-
-                                  // Botón incrementar
-                                  Container(
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius: BorderRadius.circular(8),
-                                      border: Border.all(color: Colors.grey.shade300),
-                                    ),
-                                    child: IconButton(
-                                      onPressed: () => setState(() => item.cantidad++),
-                                      icon: const Icon(Icons.add, size: 18),
-                                      padding: const EdgeInsets.all(8),
-                                      constraints: const BoxConstraints(
-                                        minWidth: 40,
-                                        minHeight: 40,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-
-                              const SizedBox(height: 12),
-
-                              // Nuevo stock
-                              Text(
-                                'Nuevo stock: ${item.stock + item.cantidad}',
-                                style: TextStyle(
-                                  color: Colors.green.shade600,
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
                   ),
 
-                  // Espaciado adicional para evitar que el contenido quede muy pegado al footer
                   if (_altaList.isNotEmpty) const SizedBox(height: 100),
                 ],
               ),
             ),
           ),
 
-          // Footer con total y botón
+          // Footer mejorado
           if (_altaList.isNotEmpty)
             Container(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
                 color: Colors.white,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 10,
-                    offset: const Offset(0, -2),
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 20,
+                    offset: const Offset(0, -8),
                   ),
                 ],
               ),
               child: Column(
-                mainAxisSize: MainAxisSize.min, // IMPORTANTE: Ajusta al contenido mínimo
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Total de unidades
+                  // Total de unidades con diseño mejorado
                   Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    child: Text(
-                      'Total de unidades a agregar: $_totalUnidades',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.black87,
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          const Color(0xFFFFB74D).withOpacity(0.1),
+                          const Color(0xFFFF8A65).withOpacity(0.1),
+                        ],
                       ),
-                      textAlign: TextAlign.center,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: const Color(0xFFFFB74D).withOpacity(0.3)),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.add_box_outlined,
+                          color: const Color(0xFFFFB74D),
+                          size: 24,
+                        ),
+                        const SizedBox(width: 12),
+                        Text(
+                          'Total: $_totalUnidades unidades',
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF8D4E2A),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
 
                   const SizedBox(height: 16),
 
-                  // Botón de envío
+                  // Botón de confirmación mejorado
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed: _isLoading ? null : _submitAltaList,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green.shade600,
+                        backgroundColor: const Color(0xFFFFB74D),
                         foregroundColor: Colors.white,
                         elevation: 0,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
+                        disabledBackgroundColor: Colors.grey.shade300,
                       ),
                       child: _isLoading
                           ? Row(
@@ -519,15 +657,28 @@ class _AltaProductWidgetState extends State<AltaProductWidget> {
                             ),
                           ),
                           const SizedBox(width: 12),
-                          const Text('Enviando...'),
+                          const Text(
+                            'Procesando...',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                         ],
                       )
-                          : Text(
-                        'Confirmar Alta de Mercancía (${_altaList.length} producto${_altaList.length != 1 ? 's' : ''})',
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
+                          : Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.check_circle_outline, size: 20),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Confirmar Alta (${_altaList.length} producto${_altaList.length != 1 ? 's' : ''})',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),

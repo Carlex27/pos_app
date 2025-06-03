@@ -13,8 +13,9 @@ class SaleService {
 
   /// Obtiene todas las ventas
   Future<List<SaleResponse>> fetchAll() async {
+    final baseUrl = await getApiBaseUrl();
     final response = await _client.get(
-      Uri.parse('$kApiBaseUrl/api/sales/findAll'),
+      Uri.parse('$baseUrl/api/sales/findAll'),
       headers: {'Content-Type': 'application/json'},
     );
     if (response.statusCode == 200) {
@@ -27,8 +28,9 @@ class SaleService {
 
   /// Obtiene los detalles de una venta por ID
   Future<SaleResponse> fetchById(int id) async {
+    final baseUrl = await getApiBaseUrl();
     final response = await _client.get(
-      Uri.parse('$kApiBaseUrl/api/sales/details/\$id'),
+      Uri.parse('$baseUrl/api/sales/details/\$id'),
       headers: {'Content-Type': 'application/json'},
     );
     if (response.statusCode == 200) {
@@ -38,12 +40,13 @@ class SaleService {
     }
   }
 
-  /// Obtiene los detalles de una venta por ID
+  /// Obtiene las ventas de un día específico
   Future<List<SaleResponse>> fetchByDay(DateTime date) async {
+    final baseUrl = await getApiBaseUrl();
     final String formattedDate = DateFormat('yyyy-MM-dd').format(date);
 
     final response = await _client.get(
-      Uri.parse('$kApiBaseUrl/api/sales/by-date')
+      Uri.parse('$baseUrl/api/sales/by-date')
           .replace(queryParameters: {'date': formattedDate}),
       headers: {'Content-Type': 'application/json'},
     );
@@ -57,11 +60,12 @@ class SaleService {
   }
   /// Obtiene las ventas de un mes específico
   Future<List<SaleResponse>> fetchByMonth(DateTime date) async {
+    final baseUrl = await getApiBaseUrl();
     final int year = date.year;
     final int month = date.month;
 
     final response = await _client.get(
-      Uri.parse('$kApiBaseUrl/api/sales/by-month')
+      Uri.parse('$baseUrl/api/sales/by-month')
           .replace(queryParameters: {
         'year': year.toString(),
         'month': month.toString(),

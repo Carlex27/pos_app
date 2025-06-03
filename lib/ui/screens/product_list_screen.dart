@@ -139,7 +139,9 @@ class _ProductsScreenState extends State<ProductsScreen> {
                   showDialog(
                     context: context,
                     builder: (_) => const AltaProductWidget(),
+
                   );
+                  _fetchProducts();
                 },
                 icon: Icon(Icons.fire_truck, size: 18, color: Colors.green.shade600),
                 label: Text(
@@ -168,6 +170,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
                   context: context,
                   builder: (_) => const NewProductForm(),
                 );
+                _fetchProducts();
               },
               icon: const Icon(Icons.add, color: Colors.white, size: 18),
               label: const Text(
