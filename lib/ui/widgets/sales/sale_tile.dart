@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../models/sale_response.dart';
+import '../../../models/sales/sale_response.dart';
 
 class SaleTile extends StatelessWidget {
   final SaleResponse sale;

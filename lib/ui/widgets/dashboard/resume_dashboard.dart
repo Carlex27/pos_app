@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../../models/resume_dashboard.dart';
+import '../../../models/resume/resume_dashboard.dart';
 
 /// Widget que muestra los 4 indicadores del dashboard
 class ResumeDashboardWidget extends StatelessWidget {

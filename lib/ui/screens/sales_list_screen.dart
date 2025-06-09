@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../services/sale_service.dart';
-import '../../models/sale_response.dart';
-import '../widgets/sale_tile.dart';
+import '../../models/sales/sale_response.dart';
+import '../widgets/sales/sale_tile.dart';
 import '../widgets/selector_date.dart';
-import '../widgets/resume_ventas_wg.dart';
+import '../widgets/sales/resume_ventas_wg.dart';
 import '../../services/resume_service.dart';
-import '../../models/resume_ventas.dart';
+import '../../models/resume/resume_ventas.dart';
 
 class SalesScreen extends StatefulWidget {
   const SalesScreen({Key? key}) : super(key: key);

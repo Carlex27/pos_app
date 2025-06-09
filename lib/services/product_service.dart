@@ -4,8 +4,8 @@ import 'package:http/http.dart' as http;
 import '../config.dart';
 import 'authenticated_client.dart';
 
-import '../models/product.dart';
-import '../models/alta_product.dart';
+import '../models/product/product.dart';
+import '../models/product/alta_product.dart';
 
 /// Servicio para consumo de la API de Productos usando cliente autenticado
 class ProductService {

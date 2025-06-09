@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../../models/resume_ventas.dart';
+import '../../../models/resume/resume_ventas.dart';
 
 class ResumeVentasWd extends StatelessWidget {
   final ResumeVentas data;

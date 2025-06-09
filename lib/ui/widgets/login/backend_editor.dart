@@ -1,7 +1,7 @@
 // Este archivo permite modificar la IP del backend desde la pantalla de login
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../config.dart';
+import '../../../config.dart';
 
 class BackendConfigEditor extends StatefulWidget {
   const BackendConfigEditor({super.key});

@@ -1,8 +1,8 @@
 import 'dart:convert';
 import '../config.dart';
 import 'authenticated_client.dart';
-import '../models/user.dart';
-import '../models/user_registration.dart';
+import '../models/user/user.dart';
+import '../models/user/user_registration.dart';
 
 /// Servicio para consumo de la API de Productos usando cliente autenticado
 class UserService {

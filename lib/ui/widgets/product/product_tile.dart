@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import '../../models/product.dart';
-import '../../config.dart';
+import '../../../models/product/product.dart';
+import '../../../config.dart';
 import 'edit_product_form.dart';
-import '../../services/product_service.dart';
+import '../../../services/product_service.dart';
 import 'package:provider/provider.dart';
 
 class ProductTile extends StatefulWidget {

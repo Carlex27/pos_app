@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../models/product.dart';
-import '../../models/alta_product.dart';
-import '../../services/product_service.dart';
+import '../../../models/product/product.dart';
+import '../../../models/product/alta_product.dart';
+import '../../../services/product_service.dart';
 
 class AltaProductWidget extends StatefulWidget {
   const AltaProductWidget({Key? key}) : super(key: key);

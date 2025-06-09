@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../models/user.dart';
+import '../../../models/user/user.dart';
 
 class UserForm extends StatefulWidget {
   final User user;

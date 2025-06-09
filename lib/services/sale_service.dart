@@ -2,7 +2,7 @@ import 'dart:convert';
 import '../config.dart';
 import 'authenticated_client.dart';
 import 'package:intl/intl.dart';
-import '../models/sale_response.dart';
+import '../models/sales/sale_response.dart';
 
 /// Servicio para consumo de la API de Ventas usando cliente autenticado
 class SaleService {

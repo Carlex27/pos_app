@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../../models/resume_dashboard.dart';
-import '../widgets/resume_dashboard.dart';
+import '../../models/resume/resume_dashboard.dart';
+import '../widgets/dashboard/resume_dashboard.dart';
 import '../../services/resume_service.dart';
 import '../widgets/selector_date.dart';
 

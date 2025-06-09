@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:pos_app/ui/widgets/alta.dart';
-import 'package:pos_app/ui/widgets/new_product.dart';
+import 'package:pos_app/ui/widgets/product/alta.dart';
+import 'package:pos_app/ui/widgets/product/new_product.dart';
 import 'package:provider/provider.dart';
 import '../../services/product_service.dart';
-import '../../models/product.dart';
-import '../widgets/product_tile.dart';
+import '../../models/product/product.dart';
+import '../widgets/product/product_tile.dart';
 
 /// Pantalla de listado de productos
 class ProductsScreen extends StatefulWidget {

@@ -1,4 +1,4 @@
-import 'package:pos_app/models/sale_dashboard.dart';
+import 'package:pos_app/models/sales/sale_dashboard.dart';
 
 class ResumeDashboard {
   final int totalProductos;

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:pos_app/ui/widgets/user_form.dart';
+import 'package:pos_app/ui/widgets/user/user_form.dart';
 import 'package:provider/provider.dart';
 import '../../services/auth_service.dart';
 import '../../services/user_service.dart';
-import '../../models/user.dart';
-import '../../models/user_registration.dart';
-import '../widgets/user_tile.dart';
+import '../../models/user/user.dart';
+import '../../models/user/user_registration.dart';
+import '../widgets/user/user_tile.dart';
 
 
 class UsersScreen extends StatefulWidget {

@@ -1,23 +1,20 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
-import '../../models/product.dart';
-import '../../services/product_service.dart';
-import '../../config.dart';
+import '../../../services/product_service.dart';
+import 'package:permission_handler/permission_handler.dart';
 
-class EditProductForm extends StatefulWidget {
-  final Product product;
-
-  const EditProductForm({Key? key, required this.product}) : super(key: key);
+class NewProductForm extends StatefulWidget {
+  const NewProductForm({super.key});
 
   @override
-  State<EditProductForm> createState() => _EditProductFormState();
+  State<NewProductForm> createState() => _NewProductFormState();
 }
 
-class _EditProductFormState extends State<EditProductForm> {
+class _NewProductFormState extends State<NewProductForm> {
   final _formKey = GlobalKey<FormState>();
+
   final _skuController = TextEditingController();
   final _nombreController = TextEditingController();
   final _marcaController = TextEditingController();
@@ -28,38 +25,6 @@ class _EditProductFormState extends State<EditProductForm> {
   final _stockController = TextEditingController();
 
   File? _selectedImage;
-  late String _currentImageUrl;
-
-  @override
-  void initState() {
-    super.initState();
-    _skuController.text = widget.product.SKU;
-    _nombreController.text = widget.product.nombre;
-    _marcaController.text = widget.product.marca;
-    _gradosController.text = widget.product.gradosAlcohol.toString();
-    _tamanioController.text = widget.product.tamanio;
-    _precioNormalController.text = widget.product.precioNormal.toString();
-    _precioMayoreoController.text = widget.product.precioMayoreo.toString();
-    _stockController.text = widget.product.stock.toString();
-
-    // Cargar imagen async sin await
-    _loadImageUrl();
-  }
-
-  Future<void> _loadImageUrl() async {
-    _currentImageUrl = await imageUrl(widget.product.imagePath);
-    if (mounted) {
-      setState(() {}); // Actualiza el estado para mostrar la imagen
-    }
-  }
-
-  Future<String> imageUrl(String? imagePath) async {
-    final baseUrl = await getApiBaseUrl(); // Asegúrate de tener esta función en config.dart
-    if (imagePath == null || imagePath.isEmpty) {
-      return '$baseUrl/images/default.png'; // Cambia esto si tienes una imagen por defecto distinta
-    }
-    return '$baseUrl$imagePath';
-  }
 
   Future<void> _pickImage() async {
     final status = await Permission.photos.request();
@@ -77,51 +42,8 @@ class _EditProductFormState extends State<EditProductForm> {
         SnackBar(
           content: const Text('Permiso para acceder a las imágenes denegado'),
           backgroundColor: Colors.red.shade400,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
       );
-    }
-  }
-
-  void _submitForm() async {
-    if (_formKey.currentState!.validate()) {
-      try {
-        final productService = Provider.of<ProductService>(context, listen: false);
-        await productService.updateProductWithOptionalImage(
-          id: widget.product.id,
-          sku: _skuController.text,
-          nombre: _nombreController.text,
-          marca: _marcaController.text,
-          gradosAlcohol: double.parse(_gradosController.text),
-          tamanio: _tamanioController.text,
-          precioNormal: double.parse(_precioNormalController.text),
-          precioMayoreo: double.parse(_precioMayoreoController.text),
-          stock: int.parse(_stockController.text),
-          imageFile: _selectedImage, // puede ser null
-        );
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('Producto actualizado exitosamente'),
-            backgroundColor: Colors.green.shade400,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-          ),
-        );
-
-        Navigator.of(context).pop();
-      } catch (e) {
-        print('Error al actualizar producto: $e');
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error: $e'),
-            backgroundColor: Colors.red.shade400,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-          ),
-        );
-      }
     }
   }
 
@@ -136,6 +58,60 @@ class _EditProductFormState extends State<EditProductForm> {
     _precioMayoreoController.dispose();
     _stockController.dispose();
     super.dispose();
+  }
+
+  void _submitForm() async {
+    if (_formKey.currentState!.validate()) {
+      if (_selectedImage == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Por favor selecciona una imagen'),
+            backgroundColor: Colors.red.shade400,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          ),
+        );
+        return;
+      }
+
+      try {
+        final productService = Provider.of<ProductService>(context, listen: false);
+
+        await productService.uploadProductWithImage(
+          sku: _skuController.text,
+          nombre: _nombreController.text,
+          marca: _marcaController.text,
+          gradosAlcohol: double.parse(_gradosController.text),
+          tamanio: _tamanioController.text,
+          precioNormal: double.parse(_precioNormalController.text),
+          precioMayoreo: double.parse(_precioMayoreoController.text),
+          stock: int.parse(_stockController.text),
+          imageFile: _selectedImage!,
+        );
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Producto creado exitosamente'),
+            backgroundColor: Colors.green.shade400,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          ),
+        );
+
+        Navigator.of(context).pop();
+
+      } catch (e) {
+        print('Error al crear producto: $e');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: $e'),
+            backgroundColor: Colors.red.shade400,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -186,14 +162,14 @@ class _EditProductFormState extends State<EditProductForm> {
                       ],
                     ),
                     child: const Icon(
-                      Icons.edit_outlined,
+                      Icons.add_box_outlined,
                       color: Colors.white,
                       size: 28,
                     ),
                   ),
                   const SizedBox(height: 16),
                   const Text(
-                    'Editar Producto',
+                    'Nuevo Producto',
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.w600,
@@ -212,100 +188,59 @@ class _EditProductFormState extends State<EditProductForm> {
                     ),
                     child: Column(
                       children: [
-                        Container(
-                          height: 120,
-                          width: double.infinity,
-                          margin: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: Colors.grey.shade300),
-                          ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(8),
-                            child: _selectedImage != null
-                                ? Image.file(
-                              _selectedImage!,
-                              fit: BoxFit.cover,
-                              width: double.infinity,
-                            )
-                                : (widget.product.imagePath != null
-                                ? Image.network(
-                              _currentImageUrl,
-                              fit: BoxFit.cover,
-                              width: double.infinity,
-                              errorBuilder: (context, error, stackTrace) {
-                                return Container(
-                                  color: Colors.grey.shade200,
-                                  child: Center(
-                                    child: Column(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                        Icon(
-                                          Icons.image_not_supported,
-                                          size: 32,
-                                          color: Colors.grey.shade400,
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          'Error al cargar',
-                                          style: TextStyle(
-                                            color: Colors.grey.shade500,
-                                            fontSize: 12,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                );
-                              },
-                              loadingBuilder: (context, child, loadingProgress) {
-                                if (loadingProgress == null) return child;
-                                return Container(
-                                  color: Colors.grey.shade200,
-                                  child: Center(
-                                    child: CircularProgressIndicator(
-                                      color: const Color(0xFFFFB74D),
-                                      value: loadingProgress.expectedTotalBytes != null
-                                          ? loadingProgress.cumulativeBytesLoaded /
-                                          loadingProgress.expectedTotalBytes!
-                                          : null,
-                                    ),
-                                  ),
-                                );
-                              },
-                            )
-                                : Container(
-                              color: Colors.grey.shade100,
-                              child: Center(
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(
-                                      Icons.image_outlined,
-                                      size: 32,
-                                      color: Colors.grey.shade400,
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      'Sin imagen',
-                                      style: TextStyle(
-                                        color: Colors.grey.shade500,
-                                        fontSize: 12,
-                                      ),
-                                    ),
-                                  ],
-                                ),
+                        if (_selectedImage != null)
+                          Container(
+                            height: 120,
+                            width: double.infinity,
+                            margin: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(8),
+                              image: DecorationImage(
+                                image: FileImage(_selectedImage!),
+                                fit: BoxFit.cover,
                               ),
-                            )),
+                            ),
+                          )
+                        else
+                          Container(
+                            height: 80,
+                            margin: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: Colors.grey.shade100,
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                color: Colors.grey.shade300,
+                                style: BorderStyle.solid,
+                              ),
+                            ),
+                            child: Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.image_outlined,
+                                    size: 32,
+                                    color: Colors.grey.shade400,
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'Sin imagen',
+                                    style: TextStyle(
+                                      color: Colors.grey.shade500,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
                           ),
-                        ),
 
                         Padding(
                           padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
                           child: OutlinedButton.icon(
                             onPressed: _pickImage,
                             icon: const Icon(Icons.photo_library_outlined),
-                            label: const Text('Cambiar Imagen'),
+                            label: Text(_selectedImage == null ? 'Seleccionar Imagen' : 'Cambiar Imagen'),
                             style: OutlinedButton.styleFrom(
                               foregroundColor: const Color(0xFFFFB74D),
                               side: const BorderSide(color: Color(0xFFFFB74D)),
@@ -382,7 +317,7 @@ class _EditProductFormState extends State<EditProductForm> {
                         ),
                       ),
 
-                      // Botón Guardar Cambios
+                      // Botón Guardar
                       ElevatedButton(
                         onPressed: _submitForm,
                         style: ElevatedButton.styleFrom(
@@ -390,7 +325,7 @@ class _EditProductFormState extends State<EditProductForm> {
                           foregroundColor: Colors.white,
                           elevation: 0,
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 24,
+                            horizontal: 32,
                             vertical: 12,
                           ),
                           shape: RoundedRectangleBorder(
@@ -398,7 +333,7 @@ class _EditProductFormState extends State<EditProductForm> {
                           ),
                         ),
                         child: const Text(
-                          'Guardar Cambios',
+                          'Guardar',
                           style: TextStyle(fontWeight: FontWeight.w600),
                         ),
                       ),

@@ -1,6 +1,6 @@
 import 'dart:convert';
-import 'package:pos_app/models/resume_dashboard.dart';
-import 'package:pos_app/models/resume_ventas.dart';
+import 'package:pos_app/models/resume/resume_dashboard.dart';
+import 'package:pos_app/models/resume/resume_ventas.dart';
 
 import '../config.dart';
 import 'authenticated_client.dart';
