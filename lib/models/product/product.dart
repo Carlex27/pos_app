@@ -25,7 +25,7 @@ class Product {
     required this.precioMayoreo,
     required this.precioUnidadVenta,
     required this.precioUnidadMayoreo,
-    required this.unidadesPorPresentacion, // Por defecto 1 unidad
+    required this.unidadesPorPresentacion,
     required this.stock,
     required this.stockMinimo,
     required this.stockPorUnidad,

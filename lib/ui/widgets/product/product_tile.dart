@@ -4,6 +4,8 @@ import '../../../config.dart';
 import 'edit_product_form.dart';
 import '../../../services/product_service.dart';
 import 'package:provider/provider.dart';
+import 'product_description.dart';
+
 
 class ProductTile extends StatefulWidget {
   final Product product;
@@ -79,6 +81,13 @@ class _ProductTileState extends State<ProductTile>
             onTapDown: _onTapDown,
             onTapUp: _onTapUp,
             onTapCancel: _onTapCancel,
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => ProductDescription(product: widget.product),
+                ),
+              );
+            },
             child: Container(
               margin: const EdgeInsets.only(bottom: 16),
               decoration: BoxDecoration(
@@ -260,18 +269,6 @@ class _ProductTileState extends State<ProductTile>
 
         const SizedBox(height: 8),
 
-        // Marca y tamaño
-        Row(
-          children: [
-            Icon(
-              Icons.local_offer_outlined,
-              size: 14,
-              color: Colors.grey.shade600,
-            ),
-            const SizedBox(width: 4),
-
-          ],
-        ),
       ],
     );
   }
@@ -485,14 +482,14 @@ class _ProductTileState extends State<ProductTile>
   }
 
   Color _getStockColor() {
-    if (widget.product.stock <= 10) return Colors.red.shade600;
-    if (widget.product.stock <= 20) return Colors.orange.shade600;
+    if (widget.product.stock <= 2) return Colors.red.shade600;
+    if (widget.product.stock <= 5) return Colors.orange.shade600;
     return Colors.green.shade600;
   }
 
   IconData _getStockIcon() {
-    if (widget.product.stock <= 10) return Icons.warning_outlined;
-    if (widget.product.stock <= 20) return Icons.info_outlined;
+    if (widget.product.stock <= 2) return Icons.warning_outlined;
+    if (widget.product.stock <= 5) return Icons.info_outlined;
     return Icons.check_circle_outlined;
   }
 
