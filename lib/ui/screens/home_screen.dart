@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:pos_app/ui/screens/clientes_screen.dart';
+import 'package:pos_app/ui/screens/clients_screen.dart';
 import 'package:pos_app/ui/screens/cortes_screen.dart';
 import 'package:pos_app/ui/screens/dashboard_screen.dart';
 import 'package:pos_app/ui/screens/product_list_screen.dart';

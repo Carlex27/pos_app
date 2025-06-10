@@ -3,6 +3,7 @@ class Client{
   final String name;
   final String direction;
   final String phoneNumber;
+  final double balance;
   final double creditLimit;
 
   Client({
@@ -10,6 +11,7 @@ class Client{
     required this.name,
     required this.direction,
     required this.phoneNumber,
+    required this.balance,
     required this.creditLimit,
   });
 
@@ -19,7 +21,8 @@ class Client{
       name:         json['name'] as String,
       direction:    json['direction'] as String,
       phoneNumber:  json['phoneNumber'] as String,
-      creditLimit:  (json['creditLimit'] as num).toDouble(),
+      balance:      (json['balance'] as num).toDouble(),
+      creditLimit:  (json['creditLimit'] as num? ?? 0).toDouble(),
     );
   }
 
@@ -29,7 +32,20 @@ class Client{
       'name':         name,
       'direction':    direction,
       'phoneNumber':  phoneNumber,
+      'balance':      balance,
       'creditLimit':  creditLimit,
     };
+  }
+  static Client empty() {
+    return Client(
+      // fill with default/empty values
+      id: 0,
+      name: '',
+      direction: '',
+      phoneNumber: '',
+      balance: 0.0,
+      creditLimit: 0.0,
+      // add other fields as needed
+    );
   }
 }
