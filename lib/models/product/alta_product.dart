@@ -1,6 +1,6 @@
 class AltaProduct {
   final String sku;
-  final int stock;
+  final double stock;
   final String nombre;
   int cantidad;
 
@@ -14,7 +14,7 @@ class AltaProduct {
   factory AltaProduct.fromJson(Map<String, dynamic> json) {
     return AltaProduct(
       sku:          json['sku']               as String,
-      stock:        json['stock']             as int,
+      stock:        json['stock']             as double,
       nombre:       json['nombre']            as String,
       cantidad:     json['cantidad']          as int,
     );

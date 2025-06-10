@@ -7,6 +7,7 @@ class SaleResponse {
   final DateTime saleDate;
   final double total;
   final String state;
+  final bool isCreditSale; // si tu API lo incluye en el mismo JSON
   final List<SaleItemResponse>? items;// si tu API los incluye en el mismo JSON
   final int itemCount;
 
@@ -17,6 +18,7 @@ class SaleResponse {
     required this.saleDate,
     required this.total,
     required this.state,
+    required this.isCreditSale, // por defecto es false
     this.items,
     required this.itemCount
   });
@@ -29,6 +31,9 @@ class SaleResponse {
       saleDate:   DateTime.parse(json['saleDate'] as String),
       total:      (json['total']     as num).toDouble(),
       state:      json['state']       as String,
+      isCreditSale: json['isCreditSale'] != null
+          ? json['isCreditSale'] as bool
+          : false, // si no está presente, por defecto es false
       items:      json['items'] != null
           ? (json['items'] as List)
           .map((e) => SaleItemResponse.fromJson(e))
@@ -46,6 +51,7 @@ class SaleResponse {
       'saleDate':    saleDate.toIso8601String(),
       'total':       total,
       'state':       state,
+      'isCreditSale': isCreditSale,
       'itemCount':   itemCount,
     };
     if (items != null) {

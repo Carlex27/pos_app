@@ -20,12 +20,15 @@ class _EditProductFormState extends State<EditProductForm> {
   final _formKey = GlobalKey<FormState>();
   final _skuController = TextEditingController();
   final _nombreController = TextEditingController();
-  final _marcaController = TextEditingController();
-  final _gradosController = TextEditingController();
-  final _tamanioController = TextEditingController();
-  final _precioNormalController = TextEditingController();
-  final _precioMayoreoController = TextEditingController();
+  final _departmentController = TextEditingController();
+  final _precioCostoController = TextEditingController();
+  final _precioVentaController = TextEditingController();
+  final _precioUnidadVentaController = TextEditingController();
+  final _precioUnidadMayoreoController = TextEditingController();
   final _stockController = TextEditingController();
+  final _stockMinimoController = TextEditingController();
+  final _minimoMayoreoController = TextEditingController();
+
 
   File? _selectedImage;
   late String _currentImageUrl;
@@ -35,12 +38,14 @@ class _EditProductFormState extends State<EditProductForm> {
     super.initState();
     _skuController.text = widget.product.SKU;
     _nombreController.text = widget.product.nombre;
-    _marcaController.text = widget.product.marca;
-    _gradosController.text = widget.product.gradosAlcohol.toString();
-    _tamanioController.text = widget.product.tamanio;
-    _precioNormalController.text = widget.product.precioNormal.toString();
-    _precioMayoreoController.text = widget.product.precioMayoreo.toString();
+    _departmentController.text = widget.product.departamento;
+    _precioCostoController.text = widget.product.precioCosto.toString();
+    _precioVentaController.text = widget.product.precioVenta.toString();
+    _precioUnidadVentaController.text = widget.product.precioUnidadVenta.toString();
+    _precioUnidadMayoreoController.text = widget.product.precioUnidadMayoreo.toString();
     _stockController.text = widget.product.stock.toString();
+    _stockMinimoController.text = widget.product.stockMinimo.toString();
+    _minimoMayoreoController.text = widget.product.minimoMayoreo.toString();
 
     // Cargar imagen async sin await
     _loadImageUrl();
@@ -92,12 +97,15 @@ class _EditProductFormState extends State<EditProductForm> {
           id: widget.product.id,
           sku: _skuController.text,
           nombre: _nombreController.text,
-          marca: _marcaController.text,
-          gradosAlcohol: double.parse(_gradosController.text),
-          tamanio: _tamanioController.text,
-          precioNormal: double.parse(_precioNormalController.text),
-          precioMayoreo: double.parse(_precioMayoreoController.text),
-          stock: int.parse(_stockController.text),
+          departamento: _departmentController.text,
+          precioCosto: double.parse(_precioCostoController.text),
+          precioVenta: double.parse(_precioVentaController.text),
+          precioMayoreo: double.parse(_precioUnidadVentaController.text),
+          precioUnidadVenta: double.parse(_precioUnidadVentaController.text),
+          precioUnidadMayoreo: double.parse(_precioUnidadMayoreoController.text),
+          stock: double.parse(_stockController.text),
+          stockMinimo: int.parse(_stockMinimoController.text),
+          minimoMayoreo: _minimoMayoreoController.text,
           imageFile: _selectedImage, // puede ser null
         );
 
@@ -129,12 +137,14 @@ class _EditProductFormState extends State<EditProductForm> {
   void dispose() {
     _skuController.dispose();
     _nombreController.dispose();
-    _marcaController.dispose();
-    _gradosController.dispose();
-    _tamanioController.dispose();
-    _precioNormalController.dispose();
-    _precioMayoreoController.dispose();
+    _departmentController.dispose();
+    _precioCostoController.dispose();
+    _precioVentaController.dispose();
+    _precioUnidadVentaController.dispose();
+    _precioUnidadMayoreoController.dispose();
     _stockController.dispose();
+    _stockMinimoController.dispose();
+    _minimoMayoreoController.dispose();
     super.dispose();
   }
 
@@ -322,40 +332,38 @@ class _EditProductFormState extends State<EditProductForm> {
                   const SizedBox(height: 16),
 
                   // Campos del formulario en filas de 2
-                  Row(
-                    children: [
-                      Expanded(child: _buildTextField(_skuController, 'SKU', TextInputType.text, Icons.qr_code_outlined)),
-                      const SizedBox(width: 12),
-                      Expanded(child: _buildTextField(_nombreController, 'Nombre', TextInputType.text, Icons.label_outline)),
-                    ],
-                  ),
+                  _buildTextField(_skuController, 'SKU', TextInputType.text, Icons.qr_code_outlined),
                   const SizedBox(height: 16),
 
-                  Row(
-                    children: [
-                      Expanded(child: _buildTextField(_marcaController, 'Marca', TextInputType.text, Icons.business_outlined)),
-                      const SizedBox(width: 12),
-                      Expanded(child: _buildTextField(_tamanioController, 'Tamaño', TextInputType.text, Icons.straighten_outlined)),
-                    ],
-                  ),
+                  _buildTextField(_nombreController, 'Nombre', TextInputType.text, Icons.label_outline),
                   const SizedBox(height: 16),
 
-                  Row(
-                    children: [
-                      Expanded(child: _buildTextField(_gradosController, 'Grados', TextInputType.number, Icons.local_bar_outlined)),
-                      const SizedBox(width: 12),
-                      Expanded(child: _buildTextField(_stockController, 'Stock', TextInputType.number, Icons.inventory_2_outlined)),
-                    ],
-                  ),
+                  _buildTextField(_departmentController, 'Departamento', TextInputType.text, Icons.store_mall_directory_outlined),
                   const SizedBox(height: 16),
 
-                  Row(
-                    children: [
-                      Expanded(child: _buildTextField(_precioNormalController, 'Precio Normal', TextInputType.number, Icons.attach_money_outlined)),
-                      const SizedBox(width: 12),
-                      Expanded(child: _buildTextField(_precioMayoreoController, 'Precio Mayoreo', TextInputType.number, Icons.money_off_outlined)),
-                    ],
-                  ),
+                  _buildTextField(_precioCostoController, 'Precio Costo', TextInputType.number, Icons.price_check_outlined),
+                  const SizedBox(height: 16),
+
+                  _buildTextField(_precioVentaController, 'Precio Venta', TextInputType.number, Icons.attach_money_outlined),
+                  const SizedBox(height: 16),
+
+                  _buildTextField(_precioUnidadVentaController, 'Precio Unidad Venta', TextInputType.number, Icons.money_outlined),
+                  const SizedBox(height: 16),
+
+                  _buildTextField(_precioUnidadMayoreoController, 'Precio Unidad Mayoreo', TextInputType.number, Icons.monetization_on_outlined),
+                  const SizedBox(height: 16),
+
+                  _buildTextField(_stockController, 'Stock', TextInputType.number, Icons.inventory_2_outlined),
+                  const SizedBox(height: 16),
+
+                  _buildTextField(_stockMinimoController, 'Stock Mínimo', TextInputType.number, Icons.remove_shopping_cart_outlined),
+                  const SizedBox(height: 16),
+
+                  _buildTextField(_minimoMayoreoController, 'Mínimo Mayoreo', TextInputType.text, Icons.stacked_line_chart_outlined),
+                  const SizedBox(height: 32),
+
+                  const SizedBox(height: 16),
+
                   const SizedBox(height: 32),
 
                   // Botones

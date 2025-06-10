@@ -269,17 +269,7 @@ class _ProductTileState extends State<ProductTile>
               color: Colors.grey.shade600,
             ),
             const SizedBox(width: 4),
-            Expanded(
-              child: Text(
-                '${widget.product.marca} • ${widget.product.tamanio}',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey.shade700,
-                  fontWeight: FontWeight.w500,
-                ),
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
+
           ],
         ),
       ],
@@ -395,7 +385,7 @@ class _ProductTileState extends State<ProductTile>
                         ),
                       ),
                       child: Text(
-                        '\$${widget.product.precioNormal.toStringAsFixed(2)}',
+                        '\$${widget.product.precioVenta.toStringAsFixed(2)}',
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w700,

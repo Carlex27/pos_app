@@ -65,12 +65,15 @@ class ProductService {
     required int id,
     required String sku,
     required String nombre,
-    required String marca,
-    required double gradosAlcohol,
-    required String tamanio,
-    required double precioNormal,
+    required String departamento,
+    required double precioCosto,
+    required double precioVenta,
     required double precioMayoreo,
-    required int stock,
+    required double precioUnidadVenta,
+    required double precioUnidadMayoreo,
+    required double stock,
+    required int stockMinimo,
+    required String minimoMayoreo,
     File? imageFile, // puede ser null
   }) async {
     final baseUrl = await getApiBaseUrl();
@@ -81,13 +84,17 @@ class ProductService {
 
     request.fields['sku'] = sku;
     request.fields['nombre'] = nombre;
-    request.fields['marca'] = marca;
-    request.fields['gradosAlcohol'] = gradosAlcohol.toString();
-    request.fields['tamanio'] = tamanio;
-    request.fields['precioNormal'] = precioNormal.toString();
+    request.fields['departamento'] = departamento;
+    request.fields['precioCosto'] = precioCosto.toString();
+    request.fields['precioVenta'] = precioVenta.toString();
     request.fields['precioMayoreo'] = precioMayoreo.toString();
+    request.fields['precioUnidadVenta'] = precioUnidadVenta.toString();
+    request.fields['precioUnidadMayoreo'] = precioUnidadMayoreo.toString();
     request.fields['stock'] = stock.toString();
+    request.fields['stockMinimo'] = stockMinimo.toString();
+    request.fields['minimoMayoreo'] = minimoMayoreo;
 
+    // Si imageFile es null, no se agrega al request
     if (imageFile != null) {
       request.files.add(await http.MultipartFile.fromPath('imagen', imageFile.path));
     }
@@ -126,12 +133,15 @@ class ProductService {
   Future<void> uploadProductWithImage({
     required String sku,
     required String nombre,
-    required String marca,
-    required double gradosAlcohol,
-    required String tamanio,
-    required double precioNormal,
+    required String departamento,
+    required double precioCosto,
+    required double precioVenta,
     required double precioMayoreo,
-    required int stock,
+    required double precioUnidadVenta,
+    required double precioUnidadMayoreo,
+    required double stock,
+    required int stockMinimo,
+    required String minimoMayoreo,
     required File imageFile,
   }) async {
     final baseUrl = await getApiBaseUrl();
@@ -140,14 +150,7 @@ class ProductService {
 
     request.headers.addAll(await _client.getAuthHeaders());
 
-    request.fields['sku'] = sku;
-    request.fields['nombre'] = nombre;
-    request.fields['marca'] = marca;
-    request.fields['gradosAlcohol'] = gradosAlcohol.toString();
-    request.fields['tamanio'] = tamanio;
-    request.fields['precioNormal'] = precioNormal.toString();
-    request.fields['precioMayoreo'] = precioMayoreo.toString();
-    request.fields['stock'] = stock.toString();
+
 
     request.files.add(await http.MultipartFile.fromPath('imagen', imageFile.path));
 

@@ -266,7 +266,7 @@ class _AltaProductWidgetState extends State<AltaProductWidget> {
                                       ),
                                     ),
                                     subtitle: Text(
-                                      'SKU: ${p.SKU} | ${p.marca} - ${p.tamanio}',
+                                      'SKU: ${p.SKU} ',
                                       style: TextStyle(
                                         color: Colors.grey.shade600,
                                         fontSize: 13,
