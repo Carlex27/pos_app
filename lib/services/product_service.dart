@@ -71,7 +71,9 @@ class ProductService {
     required double precioMayoreo,
     required double precioUnidadVenta,
     required double precioUnidadMayoreo,
+    required int unidadesPorPresentacion,
     required double stock,
+    required int stockPorUnidad,
     required int stockMinimo,
     required String minimoMayoreo,
     File? imageFile, // puede ser null
@@ -90,7 +92,9 @@ class ProductService {
     request.fields['precioMayoreo'] = precioMayoreo.toString();
     request.fields['precioUnidadVenta'] = precioUnidadVenta.toString();
     request.fields['precioUnidadMayoreo'] = precioUnidadMayoreo.toString();
+    request.fields['unidadesPorPresentacion'] = unidadesPorPresentacion.toString();
     request.fields['stock'] = stock.toString();
+    request.fields['stockPorUnidad'] = stockPorUnidad.toString();
     request.fields['stockMinimo'] = stockMinimo.toString();
     request.fields['minimoMayoreo'] = minimoMayoreo;
 
@@ -138,9 +142,9 @@ class ProductService {
     required double precioVenta,
     required double precioMayoreo,
     required double precioUnidadVenta,
-    required double precioUnidadMayoreo,
     required double stock,
     required int stockMinimo,
+    required int unidadesPorPresentacion,
     required String minimoMayoreo,
     required File imageFile,
   }) async {
@@ -150,6 +154,17 @@ class ProductService {
 
     request.headers.addAll(await _client.getAuthHeaders());
 
+    request.fields['sku'] = sku;
+    request.fields['nombre'] = nombre;
+    request.fields['departamento'] = departamento;
+    request.fields['precioCosto'] = precioCosto.toString();
+    request.fields['precioVenta'] = precioVenta.toString();
+    request.fields['precioMayoreo'] = precioMayoreo.toString();
+    request.fields['precioUnidadVenta'] = precioUnidadVenta.toString();
+    request.fields['stock'] = stock.toString();
+    request.fields['stockMinimo'] = stockMinimo.toString();
+    request.fields['unidadesPorPresentacion'] = unidadesPorPresentacion.toString();
+    request.fields['minimoMayoreo'] = minimoMayoreo;
 
 
     request.files.add(await http.MultipartFile.fromPath('imagen', imageFile.path));

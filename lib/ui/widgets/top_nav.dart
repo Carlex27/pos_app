@@ -178,7 +178,7 @@ class TopNav extends StatelessWidget {
                   value: 2,
                   child: Row(
                     children: const [
-                      Icon(Icons.shop_2, size: 20),
+                      Icon(Icons.store_mall_directory_outlined, size: 20),
                       SizedBox(width: 8),
                       Text('Departamentos'),
                     ],

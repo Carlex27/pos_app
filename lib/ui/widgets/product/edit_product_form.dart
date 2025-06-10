@@ -2,6 +2,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:pos_app/models/department/department.dart';
+import 'package:pos_app/services/department_service.dart';
 import 'package:provider/provider.dart';
 import '../../../models/product/product.dart';
 import '../../../services/product_service.dart';
@@ -20,36 +22,61 @@ class _EditProductFormState extends State<EditProductForm> {
   final _formKey = GlobalKey<FormState>();
   final _skuController = TextEditingController();
   final _nombreController = TextEditingController();
-  final _departmentController = TextEditingController();
   final _precioCostoController = TextEditingController();
   final _precioVentaController = TextEditingController();
+  final _precioMayoreoController = TextEditingController();
   final _precioUnidadVentaController = TextEditingController();
   final _precioUnidadMayoreoController = TextEditingController();
   final _stockController = TextEditingController();
   final _stockMinimoController = TextEditingController();
+  final _stockPorUnidadController = TextEditingController();
   final _minimoMayoreoController = TextEditingController();
+  final _unidadesPorProductoController = TextEditingController();
 
 
   File? _selectedImage;
   late String _currentImageUrl;
+
+  List<Department> _departments = [];
+  Department? _selectedDepartment;
+
 
   @override
   void initState() {
     super.initState();
     _skuController.text = widget.product.SKU;
     _nombreController.text = widget.product.nombre;
-    _departmentController.text = widget.product.departamento;
     _precioCostoController.text = widget.product.precioCosto.toString();
     _precioVentaController.text = widget.product.precioVenta.toString();
+    _precioMayoreoController.text = widget.product.precioMayoreo.toString();
     _precioUnidadVentaController.text = widget.product.precioUnidadVenta.toString();
     _precioUnidadMayoreoController.text = widget.product.precioUnidadMayoreo.toString();
     _stockController.text = widget.product.stock.toString();
     _stockMinimoController.text = widget.product.stockMinimo.toString();
     _minimoMayoreoController.text = widget.product.minimoMayoreo.toString();
+    _unidadesPorProductoController.text = widget.product.unidadesPorPresentacion.toString();
+    _stockPorUnidadController.text = widget.product.stockPorUnidad.toString();
 
+    _loadDepartments();
     // Cargar imagen async sin await
     _loadImageUrl();
   }
+  Future<void> _loadDepartments() async {
+    try {
+      final departmentService = Provider.of<DepartmentService>(context, listen: false);
+      final result = await departmentService.fetchAll();
+      setState(() {
+        _departments = result.where((d) => d.isActive).toList();
+        _selectedDepartment = _departments.firstWhere(
+              (d) => d.name == widget.product.departamento,
+          orElse: () => _selectedDepartment!,
+        );
+      });
+    } catch (e) {
+      print('Error al cargar departamentos: $e');
+    }
+  }
+
 
   Future<void> _loadImageUrl() async {
     _currentImageUrl = await imageUrl(widget.product.imagePath);
@@ -97,13 +124,15 @@ class _EditProductFormState extends State<EditProductForm> {
           id: widget.product.id,
           sku: _skuController.text,
           nombre: _nombreController.text,
-          departamento: _departmentController.text,
+          departamento: _selectedDepartment?.name ?? '',
           precioCosto: double.parse(_precioCostoController.text),
           precioVenta: double.parse(_precioVentaController.text),
-          precioMayoreo: double.parse(_precioUnidadVentaController.text),
+          precioMayoreo: double.parse(_precioMayoreoController.text),
           precioUnidadVenta: double.parse(_precioUnidadVentaController.text),
           precioUnidadMayoreo: double.parse(_precioUnidadMayoreoController.text),
+          unidadesPorPresentacion: int.parse(_unidadesPorProductoController.text),
           stock: double.parse(_stockController.text),
+          stockPorUnidad: widget.product.stockPorUnidad,
           stockMinimo: int.parse(_stockMinimoController.text),
           minimoMayoreo: _minimoMayoreoController.text,
           imageFile: _selectedImage, // puede ser null
@@ -137,7 +166,6 @@ class _EditProductFormState extends State<EditProductForm> {
   void dispose() {
     _skuController.dispose();
     _nombreController.dispose();
-    _departmentController.dispose();
     _precioCostoController.dispose();
     _precioVentaController.dispose();
     _precioUnidadVentaController.dispose();
@@ -145,6 +173,9 @@ class _EditProductFormState extends State<EditProductForm> {
     _stockController.dispose();
     _stockMinimoController.dispose();
     _minimoMayoreoController.dispose();
+    _unidadesPorProductoController.dispose();
+    _precioMayoreoController.dispose();
+    _stockPorUnidadController.dispose();
     super.dispose();
   }
 
@@ -338,7 +369,24 @@ class _EditProductFormState extends State<EditProductForm> {
                   _buildTextField(_nombreController, 'Nombre', TextInputType.text, Icons.label_outline),
                   const SizedBox(height: 16),
 
-                  _buildTextField(_departmentController, 'Departamento', TextInputType.text, Icons.store_mall_directory_outlined),
+                  DropdownButtonFormField<Department>(
+                    value: _selectedDepartment,
+                    decoration: InputDecoration(
+                      labelText: 'Departamento',
+                      prefixIcon: Icon(Icons.store_mall_directory_outlined, color: Colors.grey[600]),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      filled: true,
+                      fillColor: Colors.grey.shade50,
+                    ),
+                    items: _departments.map((dept) {
+                      return DropdownMenuItem(
+                        value: dept,
+                        child: Text(dept.name),
+                      );
+                    }).toList(),
+                    onChanged: (dept) => setState(() => _selectedDepartment = dept),
+                    validator: (value) => value == null ? 'Selecciona un departamento' : null,
+                  ),
                   const SizedBox(height: 16),
 
                   _buildTextField(_precioCostoController, 'Precio Costo', TextInputType.number, Icons.price_check_outlined),
@@ -347,13 +395,22 @@ class _EditProductFormState extends State<EditProductForm> {
                   _buildTextField(_precioVentaController, 'Precio Venta', TextInputType.number, Icons.attach_money_outlined),
                   const SizedBox(height: 16),
 
+                  _buildTextField(_precioMayoreoController, 'Precio Mayoreo', TextInputType.number, Icons.monetization_on_outlined),
+                  const SizedBox(height: 16),
+
                   _buildTextField(_precioUnidadVentaController, 'Precio Unidad Venta', TextInputType.number, Icons.money_outlined),
                   const SizedBox(height: 16),
 
                   _buildTextField(_precioUnidadMayoreoController, 'Precio Unidad Mayoreo', TextInputType.number, Icons.monetization_on_outlined),
                   const SizedBox(height: 16),
 
+                  _buildTextField(_unidadesPorProductoController, 'Unidades por Producto', TextInputType.number, Icons.format_list_numbered_outlined),
+                  const SizedBox(height: 16),
+
                   _buildTextField(_stockController, 'Stock', TextInputType.number, Icons.inventory_2_outlined),
+                  const SizedBox(height: 16),
+
+                  _buildTextField(_stockPorUnidadController, 'Stock por unidad', TextInputType.number, Icons.inventory_2_outlined),
                   const SizedBox(height: 16),
 
                   _buildTextField(_stockMinimoController, 'Stock Mínimo', TextInputType.number, Icons.remove_shopping_cart_outlined),

@@ -1,5 +1,6 @@
 // main.dart
 import 'package:flutter/material.dart';
+import 'package:pos_app/services/department_service.dart';
 import 'package:pos_app/services/resume_service.dart';
 import 'package:pos_app/services/user_service.dart';
 import 'package:provider/provider.dart';
@@ -28,6 +29,7 @@ class PosApp extends StatelessWidget {
         Provider<SaleService>(create: (_) => SaleService()),
         Provider<ResumeService>(create: (_) => ResumeService()),
         Provider<UserService>(create: (_) => UserService()),
+        Provider<DepartmentService>(create: (_) => DepartmentService()),
       ],
       child: MaterialApp(
         title: 'POS Cervecería',

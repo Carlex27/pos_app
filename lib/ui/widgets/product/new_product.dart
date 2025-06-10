@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:pos_app/models/department/department.dart';
+import 'package:pos_app/services/department_service.dart';
 import 'package:provider/provider.dart';
 import '../../../services/product_service.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -10,6 +12,8 @@ class NewProductForm extends StatefulWidget {
 
   @override
   State<NewProductForm> createState() => _NewProductFormState();
+
+
 }
 
 class _NewProductFormState extends State<NewProductForm> {
@@ -17,16 +21,20 @@ class _NewProductFormState extends State<NewProductForm> {
 
   final _skuController = TextEditingController();
   final _nombreController = TextEditingController();
-  final _departmentController = TextEditingController();
   final _precioCostoController = TextEditingController();
   final _precioVentaController = TextEditingController();
+  final _precioMayoreoController = TextEditingController();
   final _precioUnidadVentaController = TextEditingController();
   final _precioUnidadMayoreoController = TextEditingController();
   final _stockController = TextEditingController();
   final _stockMinimoController = TextEditingController();
   final _minimoMayoreoController = TextEditingController();
+  final _unidadesPorPresentacionController = TextEditingController();
 
   File? _selectedImage;
+
+  List<Department> _departments = [];
+  Department? _selectedDepartment;
 
   Future<void> _pickImage() async {
     final status = await Permission.photos.request();
@@ -48,12 +56,28 @@ class _NewProductFormState extends State<NewProductForm> {
       );
     }
   }
+  Future<void> _loadDepartments() async {
+    try {
+      final departmentService = Provider.of<DepartmentService>(context, listen: false);
+      final result = await departmentService.fetchAll();
+      setState(() {
+        _departments = result.where((d) => d.isActive).toList();
+      });
+    } catch (e) {
+      print('Error al cargar departamentos: $e');
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _loadDepartments();
+  }
 
   @override
   void dispose() {
     _skuController.dispose();
     _nombreController.dispose();
-    _departmentController.dispose();
     _precioCostoController.dispose();
     _precioVentaController.dispose();
     _precioUnidadVentaController.dispose();
@@ -61,6 +85,8 @@ class _NewProductFormState extends State<NewProductForm> {
     _stockController.dispose();
     _stockMinimoController.dispose();
     _minimoMayoreoController.dispose();
+    _unidadesPorPresentacionController.dispose();
+    _precioMayoreoController.dispose();
     super.dispose();
   }
 
@@ -84,14 +110,14 @@ class _NewProductFormState extends State<NewProductForm> {
         await productService.uploadProductWithImage(
           sku: _skuController.text,
           nombre: _nombreController.text,
-          departamento: _departmentController.text,
+          departamento: _selectedDepartment?.name ?? '',
           precioCosto: double.parse(_precioCostoController.text),
           precioVenta: double.parse(_precioVentaController.text),
-          precioMayoreo: double.parse(_precioUnidadVentaController.text),
+          precioMayoreo: double.parse(_precioMayoreoController.text),
           precioUnidadVenta: double.parse(_precioUnidadVentaController.text),
-          precioUnidadMayoreo: double.parse(_precioUnidadMayoreoController.text),
           stock: double.parse(_stockController.text),
           stockMinimo: int.parse(_stockMinimoController.text),
+          unidadesPorPresentacion: int.parse(_unidadesPorPresentacionController.text),
           minimoMayoreo: _minimoMayoreoController.text,
           imageFile: _selectedImage!,
         );
@@ -271,7 +297,32 @@ class _NewProductFormState extends State<NewProductForm> {
                   _buildTextField(_nombreController, 'Nombre', TextInputType.text, Icons.label_outline),
                   const SizedBox(height: 16),
 
-                  _buildTextField(_departmentController, 'Departamento', TextInputType.text, Icons.store_mall_directory_outlined),
+                  DropdownButtonFormField<Department>(
+                    value: _selectedDepartment,
+                    decoration: InputDecoration(
+                      labelText: 'Departamento',
+                      labelStyle: TextStyle(color: Colors.grey[600]),
+                      prefixIcon: Icon(Icons.store_mall_directory_outlined, color: Colors.grey[600]),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.grey.shade300),
+                      ),
+                      filled: true,
+                      fillColor: Colors.grey.shade50,
+                    ),
+                    items: _departments.map((dept) {
+                      return DropdownMenuItem(
+                        value: dept,
+                        child: Text(dept.name),
+                      );
+                    }).toList(),
+                    onChanged: (dept) {
+                      setState(() {
+                        _selectedDepartment = dept;
+                      });
+                    },
+                    validator: (value) => value == null ? 'Selecciona un departamento' : null,
+                  ),
                   const SizedBox(height: 16),
 
                   _buildTextField(_precioCostoController, 'Precio Costo', TextInputType.number, Icons.price_check_outlined),
@@ -280,7 +331,13 @@ class _NewProductFormState extends State<NewProductForm> {
                   _buildTextField(_precioVentaController, 'Precio Venta', TextInputType.number, Icons.attach_money_outlined),
                   const SizedBox(height: 16),
 
+                  _buildTextField(_precioMayoreoController, 'Precio Mayoreo', TextInputType.number, Icons.attach_money_outlined),
+                  const SizedBox(height: 16),
+
                   _buildTextField(_precioUnidadVentaController, 'Precio Unidad Venta', TextInputType.number, Icons.money_outlined),
+                  const SizedBox(height: 16),
+
+                  _buildTextField(_unidadesPorPresentacionController, 'Unidades por presentacion', TextInputType.number, Icons.money_outlined),
                   const SizedBox(height: 16),
 
                   _buildTextField(_stockController, 'Stock', TextInputType.number, Icons.inventory_2_outlined),
