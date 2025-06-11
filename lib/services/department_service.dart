@@ -47,7 +47,7 @@ class DepartmentService {
   Future<String> create(Department department) async {
     final baseUrl = await getApiBaseUrl();
     final response = await _client.post(
-      Uri.parse('$baseUrl/api/department/create'),
+      Uri.parse('$baseUrl/api/departments/create'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode(department.toJson()),
     );

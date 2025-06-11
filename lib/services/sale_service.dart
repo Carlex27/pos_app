@@ -81,5 +81,28 @@ class SaleService {
     }
   }
 
+  /// Obtiene las ventas de un mes específico y cliente específico
+  Future<List<SaleResponse>> fetchByMonthAndClient(DateTime date, int clientId) async {
+    final baseUrl = await getApiBaseUrl();
+    final int year = date.year;
+    final int month = date.month;
+
+    final response = await _client.get(
+      Uri.parse('$baseUrl/api/sales/by-month/client')
+          .replace(queryParameters: {
+        'year': year.toString(),
+        'month': month.toString(),
+        'clientId': clientId.toString(),
+      }),
+      headers: {'Content-Type': 'application/json'},
+    );
+
+    if (response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body);
+      return data.map((e) => SaleResponse.fromJson(e)).toList();
+    } else {
+      throw Exception('Error fetching sales for $month/$year: ${response.statusCode}');
+    }
+  }
 
 }
