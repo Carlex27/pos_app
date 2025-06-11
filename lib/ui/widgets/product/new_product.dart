@@ -104,6 +104,11 @@ class _NewProductFormState extends State<NewProductForm> {
         return;
       }
 
+      // Guardar el contexto del ScaffoldMessenger ANTES de operaciones async
+      // que podrían hacer que el widget se desmonte o el contexto cambie.
+      final scaffoldMessenger = ScaffoldMessenger.of(context);
+      final navigator = Navigator.of(context); // Guardar Navigator también
+
       try {
         final productService = Provider.of<ProductService>(context, listen: false);
 
@@ -114,7 +119,11 @@ class _NewProductFormState extends State<NewProductForm> {
           precioCosto: double.parse(_precioCostoController.text),
           precioVenta: double.parse(_precioVentaController.text),
           precioMayoreo: double.parse(_precioMayoreoController.text),
+          // Asegúrate de que este campo esté presente en tu servicio y modelo si lo necesitas
           precioUnidadVenta: double.parse(_precioUnidadVentaController.text),
+          // Este campo faltaba en tu llamada original al servicio en NewProductForm,
+          // pero estaba presente en los controladores. Asegúrate de incluirlo si es necesario.
+          // precioUnidadMayoreo: double.parse(_precioUnidadMayoreoController.text), // Asegúrate de esto también
           stock: double.parse(_stockController.text),
           stockMinimo: int.parse(_stockMinimoController.text),
           unidadesPorPresentacion: int.parse(_unidadesPorPresentacionController.text),
@@ -122,7 +131,7 @@ class _NewProductFormState extends State<NewProductForm> {
           imageFile: _selectedImage!,
         );
 
-        ScaffoldMessenger.of(context).showSnackBar(
+        scaffoldMessenger.showSnackBar(
           SnackBar(
             content: const Text('Producto creado exitosamente'),
             backgroundColor: Colors.green.shade400,
@@ -131,11 +140,13 @@ class _NewProductFormState extends State<NewProductForm> {
           ),
         );
 
-        Navigator.of(context).pop();
+        if (navigator.canPop()) {
+          navigator.pop(true); // <--- DEVOLVER true AQUÍ
+        }
 
       } catch (e) {
         print('Error al crear producto: $e');
-        ScaffoldMessenger.of(context).showSnackBar(
+        scaffoldMessenger.showSnackBar(
           SnackBar(
             content: Text('Error: $e'),
             backgroundColor: Colors.red.shade400,
@@ -143,6 +154,11 @@ class _NewProductFormState extends State<NewProductForm> {
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           ),
         );
+        // Opcionalmente, podrías hacer pop(false) aquí si quieres distinguir
+        // entre un cierre por cancelación y un cierre por error.
+        // if (navigator.canPop()) {
+        //   navigator.pop(false);
+        // }
       }
     }
   }

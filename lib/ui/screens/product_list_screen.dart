@@ -45,7 +45,25 @@ class _ProductsScreenState extends State<ProductsScreen> {
     }
   }
 
+  void _openNewProductForm() async {
+    // Es importante usar el context que está "por encima" del Dialog si es posible,
+    // o un context que sepas que seguirá siendo válido.
+    // El context del _ProductsScreenState está bien aquí.
+    final result = await showDialog<bool>( // Especifica el tipo de resultado esperado <bool>
+      context: context,
+      barrierDismissible: false, // El usuario debe usar los botones del diálogo
+      builder: (dialogContext) {
+        // No necesitas pasar un callback 'onSave' a NewProductForm
+        // porque manejaremos el resultado del pop.
+        return const NewProductForm();
+      },
+    );
 
+    // Si el diálogo se cerró y devolvió true, entonces actualiza la lista.
+    if (result == true && mounted) {
+      _fetchProducts(); // Llama a tu función para recargar los productos
+    }
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -118,7 +136,14 @@ class _ProductsScreenState extends State<ProductsScreen> {
                   : ListView.builder(
                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
                 itemCount: _filteredProducts.length,
-                itemBuilder: (c, i) => ProductTile(product: _filteredProducts[i]),
+                itemBuilder: (context, index) {
+                  return ProductTile(
+                    product: _filteredProducts[index],
+                    onDataChanged: () {
+                      _fetchProducts(); // O _fetchProducts(_currentSearchQuery) si tienes búsqueda
+                    },
+                  );
+                },
               ),
             ),
           ],
@@ -165,13 +190,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
 
             // Botón Agregar
             ElevatedButton.icon(
-              onPressed: () {
-                showDialog(
-                  context: context,
-                  builder: (_) => const NewProductForm(),
-                );
-                _fetchProducts();
-              },
+              onPressed: _openNewProductForm,
               icon: const Icon(Icons.add, color: Colors.white, size: 18),
               label: const Text(
                 'Agregar nuevo producto',

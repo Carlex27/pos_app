@@ -7,10 +7,12 @@ import 'client_description.dart';
 
 class ClientTile extends StatefulWidget {
   final Client client;
+  final VoidCallback onDataChanged; // <--- NUEVO: Callback para notificar cambios
 
   const ClientTile({
     Key? key,
     required this.client,
+    required this.onDataChanged, // <--- NUEVO: Requerir el callback
   }) : super(key: key);
 
   @override
@@ -19,6 +21,7 @@ class ClientTile extends StatefulWidget {
 
 class _ClientTileState extends State<ClientTile>
     with SingleTickerProviderStateMixin {
+  // ... (tu código de animación y initState/dispose permanece igual) ...
   late AnimationController _animationController;
   late Animation<double> _scaleAnimation;
   bool _isPressed = false;
@@ -60,6 +63,7 @@ class _ClientTileState extends State<ClientTile>
     _animationController.reverse();
   }
 
+
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
@@ -71,12 +75,16 @@ class _ClientTileState extends State<ClientTile>
             onTapDown: _onTapDown,
             onTapUp: _onTapUp,
             onTapCancel: _onTapCancel,
-            onTap: () {
-              Navigator.of(context).push(
+            onTap: () async { // Hacer onTap async para esperar el resultado de ClientDescription
+              final result = await Navigator.of(context).push(
                 MaterialPageRoute(
                   builder: (_) => ClientDescription(client: widget.client),
                 ),
               );
+              // Si ClientDescription indica que hubo cambios (ej. al eliminar o si pasas un resultado)
+              if (result == true && mounted) { // 'true' podría ser una señal de que los datos cambiaron
+                widget.onDataChanged();
+              }
             },
             child: Card(
               shape: RoundedRectangleBorder(
@@ -128,11 +136,34 @@ class _ClientTileState extends State<ClientTile>
                           onPressed: () {
                             showDialog(
                               context: context,
-                              builder: (_) => ClientForm(
+                              barrierDismissible: false,
+                              builder: (dialogContext) => ClientForm(
                                 client: widget.client,
                                 isEditing: true,
-                                onSave: (updatedClient) {
-                                  Navigator.of(context).pop();
+                                onSave: (updatedClient) async {
+                                  final clientService = Provider.of<ClientService>(context, listen: false);
+                                  try {
+                                    await clientService.update(updatedClient);
+                                    if (mounted) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(
+                                          content: Text('Cliente actualizado exitosamente'),
+                                          backgroundColor: Colors.green,
+                                        ),
+                                      );
+                                      widget.onDataChanged(); // <--- LLAMAR AL CALLBACK
+                                    }
+                                  } catch (e) {
+                                    if (mounted) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          content: Text('Error al actualizar cliente: $e'),
+                                          backgroundColor: Colors.red,
+                                        ),
+                                      );
+                                    }
+                                  }
+                                  // ClientForm ya cierra el diálogo
                                 },
                               ),
                             );
@@ -146,8 +177,7 @@ class _ClientTileState extends State<ClientTile>
                               context: context,
                               builder: (context) => AlertDialog(
                                 title: const Text('Eliminar cliente'),
-                                content: Text(
-                                    '¿Seguro que deseas eliminar a ${widget.client.name}?'),
+                                content: Text('¿Seguro que deseas eliminar a ${widget.client.name}?'),
                                 actions: [
                                   TextButton(
                                     child: const Text('Cancelar'),
@@ -164,24 +194,28 @@ class _ClientTileState extends State<ClientTile>
                               ),
                             );
 
-                            if (confirmed == true) {
+                            if (confirmed == true && mounted) {
                               try {
-                                final clientService =
-                                Provider.of<ClientService>(context, listen: false);
+                                final clientService = Provider.of<ClientService>(context, listen: false);
                                 await clientService.delete(widget.client.id);
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text('Cliente eliminado exitosamente'),
-                                    backgroundColor: Colors.green,
-                                  ),
-                                );
+                                if (mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Cliente eliminado exitosamente'),
+                                      backgroundColor: Colors.green,
+                                    ),
+                                  );
+                                  widget.onDataChanged(); // <--- LLAMAR AL CALLBACK
+                                }
                               } catch (e) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text('Error al eliminar: \$e'),
-                                    backgroundColor: Colors.red,
-                                  ),
-                                );
+                                if (mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text('Error al eliminar: $e'),
+                                      backgroundColor: Colors.red,
+                                    ),
+                                  );
+                                }
                               }
                             }
                           },

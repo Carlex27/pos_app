@@ -10,7 +10,7 @@ import 'package:provider/provider.dart';
 
 import '../../../models/client/client.dart';
 import '../../../services/sale_service.dart';
-import 'client_abono_widget.dart'; // Importa el nuevo widget
+import 'client_abono_widget.dart';
 
 class ClientDescription extends StatefulWidget {
   final Client client;
@@ -22,26 +22,56 @@ class ClientDescription extends StatefulWidget {
 }
 
 class _ClientDescriptionState extends State<ClientDescription> {
+  late Client _currentClient; // Para mantener el estado actual del cliente
   List<SaleResponse> _sales = [];
   bool _loadingSales = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentClient = widget.client; // Inicializa con el cliente pasado al widget
+    // _onMonthSelected inicial se podría llamar aquí si quieres cargar ventas inmediatamente
+    // por ejemplo, para el mes actual.
+  }
+
+  // Si el widget padre puede cambiar el cliente que se pasa a ClientDescription,
+  // y quieres que esta pantalla reaccione a ese cambio, necesitarías didUpdateWidget:
+  @override
+  void didUpdateWidget(covariant ClientDescription oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.client.id != oldWidget.client.id) {
+      setState(() {
+        _currentClient = widget.client;
+        _sales = []; // Resetea las ventas si el cliente cambia completamente
+        // Podrías llamar a _onMonthSelected aquí para el nuevo cliente si es necesario
+      });
+    }
+  }
+
 
   void _onMonthSelected(int year, int month) async {
     setState(() => _loadingSales = true);
     try {
       final saleService = Provider.of<SaleService>(context, listen: false);
       final selectedDate = DateTime(year, month);
-      final sales = await saleService.fetchByMonthAndClient(selectedDate, widget.client.id);
-      setState(() {
-        _sales = sales;
-        _loadingSales = false;
-      });
+      // Usa _currentClient.id aquí
+      final sales = await saleService.fetchByMonthAndClient(selectedDate, _currentClient.id);
+      if (mounted) {
+        setState(() {
+          _sales = sales;
+          _loadingSales = false;
+        });
+      }
     } catch (e) {
       debugPrint('Error al obtener ventas del cliente: $e');
-      setState(() => _loadingSales = false);
+      if (mounted) {
+        setState(() => _loadingSales = false);
+      }
     }
   }
 
   Widget _buildInfo(String label, String value) {
+    // ... (sin cambios en _buildInfo)
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -64,24 +94,27 @@ class _ClientDescriptionState extends State<ClientDescription> {
 
   @override
   Widget build(BuildContext context) {
+    // Ahora, todas las referencias a widget.client en el build method
+    // deben cambiarse a _currentClient
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Detalles del Cliente'),
+        title: Text(_currentClient.name), // Usa _currentClient.name si quieres que el título también se actualice
+        // title: const Text('Detalles del Cliente'), // O mantenlo genérico
         backgroundColor: Colors.orange[400],
         actions: [
-          // Nuevo botón para "Abonos de Cliente"
           TextButton(
             onPressed: () {
               showDialog(
                 context: context,
                 builder: (BuildContext context) {
-                  return ClientAbonoWidget(client: widget.client);
+                  // Pasa _currentClient al widget de abonos
+                  return ClientAbonoWidget(client: _currentClient);
                 },
               );
             },
             child: const Text(
               'Abonos',
-              style: TextStyle(color: Colors.white), // Ajusta el estilo según tu diseño
+              style: TextStyle(color: Colors.white),
             ),
           ),
           IconButton(
@@ -89,12 +122,42 @@ class _ClientDescriptionState extends State<ClientDescription> {
             onPressed: () {
               showDialog(
                 context: context,
-                builder: (_) => ClientForm(
-                  client: widget.client,
-                  onSave: (updatedClient) {
-                    Navigator.of(context).pop();
-                    // Aquí podrías actualizar el estado del cliente en ClientDescription si es necesario
-                    // setState(() { widget.client = updatedClient; });
+                barrierDismissible: false,
+                builder: (dialogContext) => ClientForm(
+                  client: _currentClient, // Pasa el _currentClient al formulario
+                  isEditing: true,
+                  onSave: (updatedClient) async {
+                    final clientService = Provider.of<ClientService>(context, listen: false);
+                    try {
+                      await clientService.update(updatedClient);
+
+                      if (mounted) {
+                        setState(() {
+                          _currentClient = updatedClient; // <--- ACTUALIZA EL ESTADO AQUÍ
+                        });
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Cliente actualizado exitosamente'),
+                            backgroundColor: Colors.green,
+                          ),
+                        );
+                        // No necesitas hacer nada más aquí para ClientDescription,
+                        // ya que setState reconstruirá esta pantalla con _currentClient.
+
+                        // Si ClientScreen (la pantalla anterior) necesita actualizarse,
+                        // esa lógica permanece como se discutió antes (callbacks, Provider, etc.)
+                      }
+                    } catch (e) {
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Error al actualizar cliente: $e'),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                      }
+                      debugPrint('Error al actualizar cliente: $e');
+                    }
                   },
                 ),
               );
@@ -108,8 +171,8 @@ class _ClientDescriptionState extends State<ClientDescription> {
                 context: context,
                 builder: (context) => AlertDialog(
                   title: const Text('Eliminar cliente'),
-                  content: Text(
-                      '¿Seguro que deseas eliminar a ${widget.client.name}?'),
+                  // Usa _currentClient aquí también
+                  content: Text('¿Seguro que deseas eliminar a ${_currentClient.name}?'),
                   actions: [
                     TextButton(
                       child: const Text('Cancelar'),
@@ -126,26 +189,31 @@ class _ClientDescriptionState extends State<ClientDescription> {
                 ),
               );
 
-              if (confirmed == true) {
+              if (confirmed == true && mounted) { // Añade chequeo de mounted aquí también
                 try {
-                  final clientService =
-                  Provider.of<ClientService>(context, listen: false);
-                  await clientService.delete(widget.client.id);
+                  final clientService = Provider.of<ClientService>(context, listen: false);
+                  // Usa _currentClient.id para eliminar
+                  await clientService.delete(_currentClient.id);
+
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
                       content: Text('Cliente eliminado exitosamente'),
                       backgroundColor: Colors.green,
                     ),
                   );
-                  // Opcional: Navegar hacia atrás después de eliminar
-                  // if (mounted) Navigator.of(context).pop();
+                  // Después de eliminar, probablemente quieras cerrar esta pantalla
+                  if (mounted) {
+                    Navigator.of(context).pop(); // Vuelve a la pantalla anterior
+                  }
                 } catch (e) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Error al eliminar: $e'),
-                      backgroundColor: Colors.red,
-                    ),
-                  );
+                  if (mounted) { // mounted check
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Error al eliminar: $e'),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
                 }
               }
             },
@@ -156,15 +224,16 @@ class _ClientDescriptionState extends State<ClientDescription> {
         padding: const EdgeInsets.all(20),
         child: ListView(
           children: [
-            _buildInfo('Nombre:', widget.client.name),
+            // Usa _currentClient para mostrar la información
+            _buildInfo('Nombre:', _currentClient.name),
             const SizedBox(height: 12),
-            _buildInfo('Dirección:', widget.client.direction),
+            _buildInfo('Dirección:', _currentClient.direction),
             const SizedBox(height: 12),
-            _buildInfo('Teléfono:', widget.client.phoneNumber),
+            _buildInfo('Teléfono:', _currentClient.phoneNumber),
             const SizedBox(height: 12),
-            _buildInfo('Crédito disponible:', '\$${widget.client.creditLimit.toStringAsFixed(2)}'),
+            _buildInfo('Crédito disponible:', '\$${_currentClient.creditLimit.toStringAsFixed(2)}'),
             const SizedBox(height: 12),
-            _buildInfo('Saldo actual:', '\$${widget.client.balance.toStringAsFixed(2)}'),
+            _buildInfo('Saldo actual:', '\$${_currentClient.balance.toStringAsFixed(2)}'),
             const SizedBox(height: 24),
 
             SelectorMonth(onMonthSelected: _onMonthSelected),

@@ -73,7 +73,7 @@ class DepartmentService {
 
   Future<String> update(Department department, int id) async {
     final baseUrl = await getApiBaseUrl();
-    final response = await _client.post(
+    final response = await _client.put(
       Uri.parse('$baseUrl/api/department/update/$id'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode(department.toJson()),

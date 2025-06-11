@@ -9,10 +9,12 @@ import 'product_description.dart';
 
 class ProductTile extends StatefulWidget {
   final Product product;
+  final VoidCallback onDataChanged;
 
   const ProductTile({
     Key? key,
     required this.product,
+    required this.onDataChanged,
   }) : super(key: key);
 
   @override
@@ -72,6 +74,8 @@ class _ProductTileState extends State<ProductTile>
 
   @override
   Widget build(BuildContext context) {
+    final currentContext = context; // Guardar el contexto para usarlo en callbacks asíncronos
+
     return AnimatedBuilder(
       animation: _scaleAnimation,
       builder: (context, child) {
@@ -81,12 +85,21 @@ class _ProductTileState extends State<ProductTile>
             onTapDown: _onTapDown,
             onTapUp: _onTapUp,
             onTapCancel: _onTapCancel,
-            onTap: () {
-              Navigator.of(context).push(
+            // En product_tile.dart, dentro del GestureDetector o donde manejes el tap para ver detalles
+
+
+            onTap: () async { // Asegúrate que el método sea async
+              // 'context' aquí es el context del build del ProductTile
+              final result = await Navigator.of(context).push<String>( // Espera un String
                 MaterialPageRoute(
                   builder: (_) => ProductDescription(product: widget.product),
                 ),
               );
+
+              // Verifica si el ProductTile sigue montado y si hubo un resultado
+              if (mounted && (result == "updated" || result == "deleted")) {
+                widget.onDataChanged(); // Llama al callback para que ProductsScreen haga fetch
+              }
             },
             child: Container(
               margin: const EdgeInsets.only(bottom: 16),
@@ -288,11 +301,13 @@ class _ProductTileState extends State<ProductTile>
             ),
           ),
           child: InkWell(
-            onTap: () {
+            onTap: (){
               showDialog(
                 context: context,
                 builder: (_) => EditProductForm(product: widget.product),
+
               );
+
             },
             borderRadius: BorderRadius.circular(8),
             child: Icon(

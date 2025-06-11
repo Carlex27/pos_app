@@ -149,7 +149,7 @@ class ClientService {
 
   Future<String> update(Client client) async {
     final baseUrl = await getApiBaseUrl();
-    final response = await _client.post(
+    final response = await _client.put(
       Uri.parse('$baseUrl/api/client/update')
           .replace(queryParameters: {'id': client.id.toString()}),
       headers: {'Content-Type': 'application/json'},

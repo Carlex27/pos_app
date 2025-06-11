@@ -44,6 +44,51 @@ class ProductService {
     }
   }
 
+  Future<double> getCostoInventarioPorProducto() async {
+    final baseUrl = await getApiBaseUrl();
+    final response = await _client.get(
+      Uri.parse('$baseUrl/api/product/costo/producto'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final String responseBodyString = response.body;
+      print('Total Balance Response body: $responseBodyString');
+
+      try {
+        final dynamic decodedBody = jsonDecode(responseBodyString);
+
+        if (decodedBody is String) {
+          final num? parsedNum = num.tryParse(decodedBody);
+          if (parsedNum != null) {
+            return parsedNum.toDouble();
+          } else {
+            print(
+                'Error: Could not parse string value from JSON as a number: $decodedBody');
+            throw Exception('Failed to parse total balance string from JSON');
+          }
+        } else if (decodedBody is num) {
+          return decodedBody.toDouble();
+        } else {
+          print('Error: Unexpected JSON type for total balance: ${decodedBody
+              .runtimeType}');
+          throw Exception('Unexpected JSON type for total balance');
+        }
+      } catch (e) {
+        print('Error decoding or parsing total balance JSON: $e');
+        throw Exception('Failed to decode or parse total balance JSON');
+      }
+    } else {
+      print('Error fetching Total Balance: ${response
+          .statusCode}, Body: ${response.body}');
+      throw Exception('Error fetching Total Balance: ${response.statusCode}');
+    }
+  }
+
+
   Future<void> sendAltaProductos(List<AltaProduct> productos) async {
     final baseUrl = await getApiBaseUrl();
     final uri = Uri.parse('$baseUrl/api/products/altaProducto');
@@ -75,7 +120,7 @@ class ProductService {
     required double stock,
     required int stockPorUnidad,
     required int stockMinimo,
-    required String minimoMayoreo,
+    required int minimoMayoreo,
     File? imageFile, // puede ser null
   }) async {
     final baseUrl = await getApiBaseUrl();
@@ -96,7 +141,7 @@ class ProductService {
     request.fields['stock'] = stock.toString();
     request.fields['stockPorUnidad'] = stockPorUnidad.toString();
     request.fields['stockMinimo'] = stockMinimo.toString();
-    request.fields['minimoMayoreo'] = minimoMayoreo;
+    request.fields['minimoMayoreo'] = minimoMayoreo.toString();
 
     // Si imageFile es null, no se agrega al request
     if (imageFile != null) {

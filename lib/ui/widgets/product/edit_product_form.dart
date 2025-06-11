@@ -118,13 +118,19 @@ class _EditProductFormState extends State<EditProductForm> {
 
   void _submitForm() async {
     if (_formKey.currentState!.validate()) {
+      final scaffoldMessenger = ScaffoldMessenger.of(context);
+      final navigator = Navigator.of(context);
+
       try {
         final productService = Provider.of<ProductService>(context, listen: false);
-        await productService.updateProductWithOptionalImage(
-          id: widget.product.id,
-          sku: _skuController.text,
+        // Crear un objeto Product actualizado para potencialmente pasarlo,
+        // aunque para el flujo actual con onDataChanged solo necesitamos la señal.
+        // Sin embargo, tener el objeto actualizado es buena práctica.
+        final updatedProductData = Product(
+          id: widget.product.id, // Mantener el ID original
+          SKU: _skuController.text,
           nombre: _nombreController.text,
-          departamento: _selectedDepartment?.name ?? '',
+          departamento: _selectedDepartment?.name ?? widget.product.departamento, // Usar el departamento actual si no se cambia
           precioCosto: double.parse(_precioCostoController.text),
           precioVenta: double.parse(_precioVentaController.text),
           precioMayoreo: double.parse(_precioMayoreoController.text),
@@ -132,13 +138,33 @@ class _EditProductFormState extends State<EditProductForm> {
           precioUnidadMayoreo: double.parse(_precioUnidadMayoreoController.text),
           unidadesPorPresentacion: int.parse(_unidadesPorProductoController.text),
           stock: double.parse(_stockController.text),
-          stockPorUnidad: widget.product.stockPorUnidad,
+          stockPorUnidad: widget.product.stockPorUnidad, // Este campo parece que no se edita en el form
           stockMinimo: int.parse(_stockMinimoController.text),
-          minimoMayoreo: _minimoMayoreoController.text,
-          imageFile: _selectedImage, // puede ser null
+          minimoMayoreo: int.parse(_minimoMayoreoController.text),
+          imagePath: widget.product.imagePath, // Se manejará por separado con _selectedImage
+          // Asumir que se mantiene el estado activo
+          // ... otros campos que no se editan directamente en este formulario pero son parte del modelo Product
         );
 
-        ScaffoldMessenger.of(context).showSnackBar(
+        await productService.updateProductWithOptionalImage(
+          id: widget.product.id,
+          sku: updatedProductData.SKU,
+          nombre: updatedProductData.nombre,
+          departamento: updatedProductData.departamento,
+          precioCosto: updatedProductData.precioCosto,
+          precioVenta: updatedProductData.precioVenta,
+          precioMayoreo: updatedProductData.precioMayoreo,
+          precioUnidadVenta: updatedProductData.precioUnidadVenta,
+          precioUnidadMayoreo: updatedProductData.precioUnidadMayoreo,
+          unidadesPorPresentacion: updatedProductData.unidadesPorPresentacion,
+          stock: updatedProductData.stock,
+          stockPorUnidad: updatedProductData.stockPorUnidad,
+          stockMinimo: updatedProductData.stockMinimo,
+          minimoMayoreo: updatedProductData.minimoMayoreo,
+          imageFile: _selectedImage,
+        );
+
+        scaffoldMessenger.showSnackBar(
           SnackBar(
             content: const Text('Producto actualizado exitosamente'),
             backgroundColor: Colors.green.shade400,
@@ -147,10 +173,13 @@ class _EditProductFormState extends State<EditProductForm> {
           ),
         );
 
-        Navigator.of(context).pop();
+        if (mounted) { // Asegúrate de que EditProductForm sigue montado
+          Navigator.of(context).pop(true); // <--- ESTO ES CRUCIAL. Usa el 'context' de EditProductForm.
+        }
+
       } catch (e) {
         print('Error al actualizar producto: $e');
-        ScaffoldMessenger.of(context).showSnackBar(
+        scaffoldMessenger.showSnackBar(
           SnackBar(
             content: Text('Error: $e'),
             backgroundColor: Colors.red.shade400,
@@ -158,6 +187,10 @@ class _EditProductFormState extends State<EditProductForm> {
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           ),
         );
+        // Opcionalmente, pop(false) o no hacer pop para que el usuario pueda reintentar.
+        // if (navigator.canPop()) {
+        //   navigator.pop(false);
+        // }
       }
     }
   }
