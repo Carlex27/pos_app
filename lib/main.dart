@@ -6,7 +6,7 @@ import 'package:pos_app/services/resume_service.dart';
 import 'package:pos_app/services/user_service.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-
+import 'package:intl/date_symbol_data_local.dart';
 
 import 'ui/screens/login_screen.dart';
 import 'ui/screens/home_screen.dart';
@@ -14,8 +14,10 @@ import 'services/auth_service.dart';
 import 'services/product_service.dart';
 import 'services/sale_service.dart';
 
-void main() {
-  runApp(const PosApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized(); // Si aún no lo tienes
+  await initializeDateFormatting('es_ES', null);
+  runApp(PosApp());
 }
 
 class PosApp extends StatelessWidget {

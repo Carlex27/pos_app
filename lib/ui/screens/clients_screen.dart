@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pos_app/ui/screens/saldos_screen.dart';
 import 'package:provider/provider.dart';
 import '../../models/client/client.dart';
 import '../../services/client_service.dart';
@@ -48,8 +49,14 @@ class _ClientsScreenState extends State<ClientsScreen> {
         client: Client.empty(),
         onSave: (newClient) {
           final service = Provider.of<ClientService>(context, listen: false);
-          service.create(newClient);
-          _fetchClients();
+          service.create(newClient).then((_) { // Es bueno manejar el Future de create
+            _fetchClients(); // Refresca después de crear
+            Navigator.of(context).pop(); // Cierra el diálogo después de guardar
+          }).catchError((error) {
+            // Maneja errores de creación aquí, por ejemplo, mostrando un SnackBar
+            debugPrint("Error al crear cliente: $error");
+            // Opcionalmente cierra el diálogo o muestra el error en el diálogo
+          });
         },
       ),
     );
@@ -136,25 +143,62 @@ class _ClientsScreenState extends State<ClientsScreen> {
 
       // Botón flotante
       floatingActionButton: Padding(
-        padding: const EdgeInsets.only(bottom: 5),
-        child: ElevatedButton.icon(
-          onPressed: _openNewClientForm,
-          icon: const Icon(Icons.person_add, color: Colors.white, size: 18),
-          label: const Text(
-            'Agregar nuevo cliente',
-            style: TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.w600,
+        padding: const EdgeInsets.only(bottom: 5, left: 16, right: 16), // Ajusta el padding según necesites
+        child: Row( // Cambiamos Column por Row
+          mainAxisAlignment: MainAxisAlignment.spaceBetween, // Distribuye el espacio entre los botones
+          // O usa MainAxisAlignment.end para alinearlos a la derecha con espacio entre ellos
+          // O MainAxisAlignment.center para centrarlos
+          children: [
+            // Botón Reporte de Saldos
+            ElevatedButton.icon(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const SaldosScreen()),
+                );
+              },
+              icon: const Icon(Icons.receipt_long, color: Colors.white, size: 18),
+              label: const Text(
+                'Reporte de Saldos',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.teal.shade600,
+                elevation: 3,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
             ),
-          ),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.orange.shade600,
-            elevation: 3,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
+
+            // Puedes añadir un SizedBox para un espaciado explícito si MainAxisAlignment.spaceBetween no es suficiente
+            // const SizedBox(width: 12),
+
+            // Botón Nuevo Cliente
+            ElevatedButton.icon(
+              onPressed: _openNewClientForm,
+              icon: const Icon(Icons.person_add, color: Colors.white, size: 18),
+              label: const Text(
+                'Agregar nuevo cliente',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.orange.shade600,
+                elevation: 3,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
             ),
-          ),
+          ],
         ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,

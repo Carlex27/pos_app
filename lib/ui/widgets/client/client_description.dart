@@ -10,7 +10,7 @@ import 'package:provider/provider.dart';
 
 import '../../../models/client/client.dart';
 import '../../../services/sale_service.dart';
-
+import 'client_abono_widget.dart'; // Importa el nuevo widget
 
 class ClientDescription extends StatefulWidget {
   final Client client;
@@ -69,6 +69,21 @@ class _ClientDescriptionState extends State<ClientDescription> {
         title: const Text('Detalles del Cliente'),
         backgroundColor: Colors.orange[400],
         actions: [
+          // Nuevo botón para "Abonos de Cliente"
+          TextButton(
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return ClientAbonoWidget(client: widget.client);
+                },
+              );
+            },
+            child: const Text(
+              'Abonos',
+              style: TextStyle(color: Colors.white), // Ajusta el estilo según tu diseño
+            ),
+          ),
           IconButton(
             icon: const Icon(Icons.edit_outlined),
             onPressed: () {
@@ -78,6 +93,8 @@ class _ClientDescriptionState extends State<ClientDescription> {
                   client: widget.client,
                   onSave: (updatedClient) {
                     Navigator.of(context).pop();
+                    // Aquí podrías actualizar el estado del cliente en ClientDescription si es necesario
+                    // setState(() { widget.client = updatedClient; });
                   },
                 ),
               );
@@ -120,10 +137,12 @@ class _ClientDescriptionState extends State<ClientDescription> {
                       backgroundColor: Colors.green,
                     ),
                   );
+                  // Opcional: Navegar hacia atrás después de eliminar
+                  // if (mounted) Navigator.of(context).pop();
                 } catch (e) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('Error al eliminar: \$e'),
+                      content: Text('Error al eliminar: $e'),
                       backgroundColor: Colors.red,
                     ),
                   );

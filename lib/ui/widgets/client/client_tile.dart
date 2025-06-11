@@ -130,6 +130,7 @@ class _ClientTileState extends State<ClientTile>
                               context: context,
                               builder: (_) => ClientForm(
                                 client: widget.client,
+                                isEditing: true,
                                 onSave: (updatedClient) {
                                   Navigator.of(context).pop();
                                 },

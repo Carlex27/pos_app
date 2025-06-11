@@ -4,11 +4,13 @@ import '../../../models/client/client.dart';
 class ClientForm extends StatefulWidget {
   final Client? client;
   final void Function(Client) onSave;
+  final bool isEditing;
 
   const ClientForm({
     Key? key,
     this.client,
     required this.onSave,
+    this.isEditing = false,
   }) : super(key: key);
 
   @override
@@ -22,6 +24,8 @@ class _ClientFormState extends State<ClientForm> {
   late final TextEditingController _directionController;
   late final TextEditingController _phoneController;
   late final TextEditingController _creditLimitController;
+
+
 
   @override
   void initState() {
@@ -51,6 +55,7 @@ class _ClientFormState extends State<ClientForm> {
           phoneNumber: _phoneController.text,
           creditLimit: double.tryParse(_creditLimitController.text) ?? 0.0,
           balance: widget.client?.balance ?? 0.0,
+          lastAbonoDate: widget.client?.lastAbonoDate ?? DateTime(1970, 1, 1),
         ),
       );
       Navigator.of(context).pop();
@@ -70,7 +75,7 @@ class _ClientFormState extends State<ClientForm> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                widget.client == null ? 'Nuevo Cliente' : 'Editar Cliente',
+                widget.isEditing ? 'Editar Cliente' : 'Crear Cliente',
                 style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 16),

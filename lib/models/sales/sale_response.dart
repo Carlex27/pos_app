@@ -45,7 +45,7 @@ class SaleResponse {
       'id':          id,
       'clientName':  clientName,
       'vendorName':  vendorName,
-      'saleDate':    saleDate.toIso8601String(),
+      'saleDate':    saleDate.toString(),
       'total':       total,
       'isCreditSale': isCreditSale,
       'itemCount':   itemCount,
