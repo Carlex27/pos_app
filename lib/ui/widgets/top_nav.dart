@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pos_app/ui/screens/salidas_screen.dart';
 import 'package:provider/provider.dart';
 import '../../services/auth_service.dart';
 import '../screens/ticket_screen.dart';
@@ -57,23 +58,30 @@ class TopNav extends StatelessWidget {
                   await showDialog(
                     context: context,
                     barrierDismissible: true,
-                    builder: (context) => const TicketScreen(),
+                    builder: (context) => const SalidasScreen(),
                   );
-                } else if (value == 1) {
-                  // Mostrar pantalla de usuarios como modal
+                }else if (value == 1) {
+                  // Mostrar pantalla de configuración de tick et como modal
                   await showDialog(
                     context: context,
                     barrierDismissible: true,
-                    builder: (context) => const UsersScreen(),
+                    builder: (context) => const TicketScreen(),
                   );
                 } else if (value == 2) {
                   // Mostrar pantalla de usuarios como modal
                   await showDialog(
                     context: context,
                     barrierDismissible: true,
-                    builder: (context) => const DepartmentScreen(),
+                    builder: (context) => const UsersScreen(),
                   );
                 } else if (value == 3) {
+                  // Mostrar pantalla de usuarios como modal
+                  await showDialog(
+                    context: context,
+                    barrierDismissible: true,
+                    builder: (context) => const DepartmentScreen(),
+                  );
+                } else if (value == 4) {
                   final shouldLogout = await showDialog<bool>(
                     context: context,
                     builder: (context) => AlertDialog(
@@ -160,12 +168,22 @@ class TopNav extends StatelessWidget {
                     children: const [
                       Icon(Icons.receipt_long, size: 20),
                       SizedBox(width: 8),
-                      Text('Configurar Ticket'),
+                      Text('Salidas'),
                     ],
                   ),
                 ),
                 PopupMenuItem(
                   value: 1,
+                  child: Row(
+                    children: const [
+                      Icon(Icons.receipt_long, size: 20),
+                      SizedBox(width: 8),
+                      Text('Configurar Ticket'),
+                    ],
+                  ),
+                ),
+                PopupMenuItem(
+                  value: 2,
                   child: Row(
                     children: const [
                       Icon(Icons.people_outline, size: 20),
@@ -175,7 +193,7 @@ class TopNav extends StatelessWidget {
                   ),
                 ),
                 PopupMenuItem(
-                  value: 2,
+                  value: 3,
                   child: Row(
                     children: const [
                       Icon(Icons.store_mall_directory_outlined, size: 20),
@@ -185,7 +203,7 @@ class TopNav extends StatelessWidget {
                   ),
                 ),
                 PopupMenuItem(
-                  value: 3,
+                  value: 4,
                   child: Row(
                     children: const [
                       Icon(Icons.logout_rounded, size: 20),

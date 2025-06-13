@@ -6,5 +6,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 Future<String> getApiBaseUrl() async {
   final prefs = await SharedPreferences.getInstance();
-  return prefs.getString('api_base_url') ?? 'http://100.118.244.96:8080';
+  String ip = prefs.getString('api_ip') ?? '100.118.244.96';
+  String url = 'http://$ip:8080';
+  print(url);
+  return url;
 }

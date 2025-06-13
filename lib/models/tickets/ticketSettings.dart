@@ -8,7 +8,7 @@ class TicketSettings {
   final String url;
 
   TicketSettings({
-    required this.id,
+    this.id = 0,
     required this.nombreNegocio,
     required this.direccion,
     required this.telefono,

@@ -13,10 +13,18 @@ class AltaProductWidget extends StatefulWidget {
 
 class _AltaProductWidgetState extends State<AltaProductWidget> {
   final TextEditingController _searchController = TextEditingController();
+  final List<TextEditingController> _precioCostoControllers = [];
+  final List<TextEditingController> _cantidadControllers = [];
+
+
   final List<AltaProduct> _altaList = [];
   List<Product> _suggestions = [];
   bool _isLoading = false;
   String _searchQuery = '';
+  double _precioCosto = 1;
+  int _cantidad = 1;
+
+
 
   void _onSearchChanged(String query) async {
     if (query.isEmpty) {
@@ -44,17 +52,71 @@ class _AltaProductWidgetState extends State<AltaProductWidget> {
         );
     } else {
       setState(() {
-        _altaList.add(
-          AltaProduct(
-            sku: product.SKU,
-            nombre: product.nombre,
-            stock: product.stock,
-          ),
+        final nuevoAltaProduct = AltaProduct(
+          sku: product.SKU,
+          nombre: product.nombre,
+          stock: product.stock,
+          cantidad: _cantidad, // Usa el _cantidad inicial del estado
+          precioCosto: _precioCosto, // Usa el _precioCosto inicial del estado
         );
+        _altaList.add(nuevoAltaProduct);
+
+        // NUEVO: Crear y añadir controladores para el nuevo item
+        final precioController = TextEditingController(text: nuevoAltaProduct.precioCosto.toStringAsFixed(2));
+        final cantidadController = TextEditingController(text: nuevoAltaProduct.cantidad.toString());
+
+        // Escuchar cambios en estos controladores para actualizar _altaList
+        precioController.addListener(() {
+          final newPriceText = precioController.text;
+          final parsedPrice = double.tryParse(newPriceText);
+          // Encuentra el índice del producto al que pertenece este controlador
+          // Esto puede ser un poco frágil si los controladores y _altaList se desincronizan.
+          // Una mejor manera sería tener un mapa de SKU a controladores o un objeto que contenga
+          // tanto el AltaProduct como sus controladores.
+          // Por ahora, asumimos que los índices coinciden.
+          final index = _precioCostoControllers.indexOf(precioController);
+          if (index != -1 && parsedPrice != null && parsedPrice >= 0 && _altaList[index].precioCosto != parsedPrice) {
+            // No llames a setState aquí directamente para evitar reconstrucciones excesivas
+            // Actualiza el modelo directamente. setState se llamará desde los onChanged de los TextFormField si es necesario.
+            // O, si prefieres, llama a setState pero ten cuidado con los bucles.
+            // La actualización directa del modelo es más limpia si el controlador ya refleja el cambio.
+            _altaList[index] = _altaList[index].copyWith(precioCosto: parsedPrice);
+          }
+        });
+
+        cantidadController.addListener(() {
+          final newQtyText = cantidadController.text;
+          final parsedQty = int.tryParse(newQtyText);
+          final index = _cantidadControllers.indexOf(cantidadController);
+          if (index != -1 && parsedQty != null && parsedQty > 0 && _altaList[index].cantidad != parsedQty) {
+            _altaList[index] = _altaList[index].copyWith(cantidad: parsedQty);
+            // También actualiza el texto del controlador de "Nuevo Stock" si lo tienes separado.
+            // Esto se hace más fácil si el cálculo del nuevo stock está en el builder.
+            // Es importante llamar a setState si el "Nuevo Stock" depende de esto y no se reconstruye solo.
+            // Por ahora, el builder se encarga de esto.
+          }
+        });
+
+        _precioCostoControllers.add(precioController);
+        _cantidadControllers.add(cantidadController);
+
         _suggestions.clear();
         _searchController.clear();
       });
     }
+  }
+  // NUEVO: Método para quitar controladores cuando se elimina un item
+  void _removeFromAltaList(int index) {
+    setState(() {
+      _altaList.removeAt(index);
+
+      // Liberar y quitar los controladores correspondientes
+      _precioCostoControllers[index].dispose();
+      _precioCostoControllers.removeAt(index);
+
+      _cantidadControllers[index].dispose();
+      _cantidadControllers.removeAt(index);
+    });
   }
 
   void _submitAltaList() async {
@@ -88,6 +150,21 @@ class _AltaProductWidgetState extends State<AltaProductWidget> {
 
   int get _totalUnidades {
     return _altaList.fold(0, (sum, item) => sum + item.cantidad);
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    // NUEVO: Liberar todos los controladores de la lista
+    for (var controller in _precioCostoControllers) {
+      controller.dispose();
+    }
+    for (var controller in _cantidadControllers) {
+      controller.dispose();
+    }
+    _precioCostoControllers.clear();
+    _cantidadControllers.clear();
+    super.dispose();
   }
 
   @override
@@ -388,6 +465,9 @@ class _AltaProductWidgetState extends State<AltaProductWidget> {
                             itemCount: _altaList.length,
                             itemBuilder: (context, index) {
                               final item = _altaList[index];
+                              final precioController = _precioCostoControllers[index];
+                              final cantidadController = _cantidadControllers[index];
+
                               return Container(
                                 margin: const EdgeInsets.only(bottom: 16),
                                 decoration: BoxDecoration(
@@ -484,6 +564,56 @@ class _AltaProductWidgetState extends State<AltaProductWidget> {
                                       Row(
                                         children: [
                                           Text(
+                                            'Precio Costo:',
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w500,
+                                              color: Colors.grey.shade700,
+                                            ),
+                                          ),
+                                          const Spacer(),
+                                          Container(
+                                            width: 80,
+                                            child: TextFormField(
+                                              controller: precioController,
+                                              keyboardType: TextInputType.number,
+                                              textAlign: TextAlign.center,
+                                              style: const TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                              decoration: InputDecoration(
+                                                prefixText: '\$ ',
+                                                contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+                                                border: OutlineInputBorder(
+                                                  borderRadius: BorderRadius.circular(8),
+                                                  borderSide: BorderSide(color: Colors.grey.shade300),
+                                                ),
+                                                focusedBorder: OutlineInputBorder(
+                                                  borderRadius: BorderRadius.circular(8),
+                                                  borderSide: const BorderSide(color: Color(0xFFFFB74D), width: 2),
+                                                ),
+                                                filled: true,
+                                                fillColor: Colors.white,
+                                              ),
+                                              onChanged: (value) {
+                                                final parsed = double.tryParse(value);
+                                                if (parsed != null && parsed >= 0) { // Permitir 0 si es válido
+                                                  setState(() {
+                                                    _altaList[index] = _altaList[index].copyWith(precioCosto: parsed);
+                                                  });
+                                                }
+                                              },
+
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+
+                                      const SizedBox(height: 12),
+                                      Row(
+                                        children: [
+                                          Text(
                                             'Cantidad a agregar:',
                                             style: TextStyle(
                                               fontSize: 14,
@@ -495,7 +625,7 @@ class _AltaProductWidgetState extends State<AltaProductWidget> {
                                           Container(
                                             width: 80,
                                             child: TextFormField(
-                                              initialValue: item.cantidad.toString(),
+                                              controller: cantidadController,
                                               keyboardType: TextInputType.number,
                                               textAlign: TextAlign.center,
                                               style: const TextStyle(
@@ -518,7 +648,10 @@ class _AltaProductWidgetState extends State<AltaProductWidget> {
                                               onChanged: (value) {
                                                 final parsed = int.tryParse(value);
                                                 if (parsed != null && parsed > 0) {
-                                                  setState(() => item.cantidad = parsed);
+                                                  setState(() {
+                                                    // Actualiza el item específico en la lista
+                                                    _altaList[index] = _altaList[index].copyWith(cantidad: parsed);
+                                                  });
                                                 }
                                               },
                                             ),
@@ -526,8 +659,8 @@ class _AltaProductWidgetState extends State<AltaProductWidget> {
                                         ],
                                       ),
 
-                                      const SizedBox(height: 12),
 
+                                      const SizedBox(height: 12),
                                       // Nuevo stock destacado
                                       Container(
                                         width: double.infinity,

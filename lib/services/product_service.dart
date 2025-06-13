@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
+import 'package:pos_app/models/product/product_Inventory_entry.dart';
 import '../config.dart';
 import 'authenticated_client.dart';
 
@@ -43,11 +44,70 @@ class ProductService {
       throw Exception('Error fetching products: \${response.statusCode}');
     }
   }
-
-  Future<double> getCostoInventarioPorProducto() async {
+  Future<List<ProductInventoryEntry>> fetchAllEntriesByProduct(int id) async {
     final baseUrl = await getApiBaseUrl();
     final response = await _client.get(
-      Uri.parse('$baseUrl/api/product/costo/producto'),
+      Uri.parse('$baseUrl/api/inventory/entry/product')
+          .replace(queryParameters: {'id': id.toString()}),
+      headers: {'Content-Type': 'application/json'},
+    );
+    if (response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body);
+      return data.map((e) => ProductInventoryEntry.fromJson(e)).toList();
+    } else {
+      throw Exception('Error fetching products entries: ${response.statusCode}');
+    }
+  }
+
+  Future<double> getCostoInventarioPorProducto(int id) async {
+    final baseUrl = await getApiBaseUrl();
+    final response = await _client.get(
+      Uri.parse('$baseUrl/api/products/costo/producto')
+      .replace(queryParameters: {'id': id.toString()}),
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final String responseBodyString = response.body;
+      print('Total Balance Response body: $responseBodyString');
+
+      try {
+        final dynamic decodedBody = jsonDecode(responseBodyString);
+
+        if (decodedBody is String) {
+          final num? parsedNum = num.tryParse(decodedBody);
+          if (parsedNum != null) {
+            return parsedNum.toDouble();
+          } else {
+            print(
+                'Error: Could not parse string value from JSON as a number: $decodedBody');
+            throw Exception('Failed to parse total balance string from JSON');
+          }
+        } else if (decodedBody is num) {
+          return decodedBody.toDouble();
+        } else {
+          print('Error: Unexpected JSON type for total balance: ${decodedBody
+              .runtimeType}');
+          throw Exception('Unexpected JSON type for total balance');
+        }
+      } catch (e) {
+        print('Error decoding or parsing total balance JSON: $e');
+        throw Exception('Failed to decode or parse total balance JSON');
+      }
+    } else {
+      print('Error fetching Total Balance: ${response
+          .statusCode}, Body: ${response.body}');
+      throw Exception('Error fetching Total Balance: ${response.statusCode}');
+    }
+  }
+
+  Future<double> getCostoInventarioTotal() async {
+    final baseUrl = await getApiBaseUrl();
+    final response = await _client.get(
+      Uri.parse('$baseUrl/api/products/costo/total'),
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
@@ -222,5 +282,20 @@ class ProductService {
     }
   }
 
+  Future<String> updateEntry(ProductInventoryEntry entry) async {
+    int id = entry.id;
+    print(entry.toJson());
+    final baseUrl = await getApiBaseUrl();
+    final response = await _client.put(
+      Uri.parse('$baseUrl/api/inventory/update/$id'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode(entry.toJson()),
+    );
+    if (response.statusCode == 200) {
+      return "Entrada actualizada correctamente";
+    } else {
+      throw Exception('Error creating entrada: ${response.statusCode}');
+    }
+  }
 
 }
