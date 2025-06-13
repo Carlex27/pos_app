@@ -2,6 +2,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:pos_app/models/department/department.dart';
+import 'package:pos_app/services/department_service.dart';
 import 'package:provider/provider.dart';
 import '../../../models/product/product.dart';
 import '../../../services/product_service.dart';
@@ -20,31 +22,61 @@ class _EditProductFormState extends State<EditProductForm> {
   final _formKey = GlobalKey<FormState>();
   final _skuController = TextEditingController();
   final _nombreController = TextEditingController();
-  final _marcaController = TextEditingController();
-  final _gradosController = TextEditingController();
-  final _tamanioController = TextEditingController();
-  final _precioNormalController = TextEditingController();
+  final _precioCostoController = TextEditingController();
+  final _precioVentaController = TextEditingController();
   final _precioMayoreoController = TextEditingController();
+  final _precioUnidadVentaController = TextEditingController();
+  final _precioUnidadMayoreoController = TextEditingController();
   final _stockController = TextEditingController();
+  final _stockMinimoController = TextEditingController();
+  final _stockPorUnidadController = TextEditingController();
+  final _minimoMayoreoController = TextEditingController();
+  final _unidadesPorProductoController = TextEditingController();
+
 
   File? _selectedImage;
   late String _currentImageUrl;
+
+  List<Department> _departments = [];
+  Department? _selectedDepartment;
+
 
   @override
   void initState() {
     super.initState();
     _skuController.text = widget.product.SKU;
     _nombreController.text = widget.product.nombre;
-    _marcaController.text = widget.product.marca;
-    _gradosController.text = widget.product.gradosAlcohol.toString();
-    _tamanioController.text = widget.product.tamanio;
-    _precioNormalController.text = widget.product.precioNormal.toString();
+    _precioCostoController.text = widget.product.precioCosto.toString();
+    _precioVentaController.text = widget.product.precioVenta.toString();
     _precioMayoreoController.text = widget.product.precioMayoreo.toString();
+    _precioUnidadVentaController.text = widget.product.precioUnidadVenta.toString();
+    _precioUnidadMayoreoController.text = widget.product.precioUnidadMayoreo.toString();
     _stockController.text = widget.product.stock.toString();
+    _stockMinimoController.text = widget.product.stockMinimo.toString();
+    _minimoMayoreoController.text = widget.product.minimoMayoreo.toString();
+    _unidadesPorProductoController.text = widget.product.unidadesPorPresentacion.toString();
+    _stockPorUnidadController.text = widget.product.stockPorUnidad.toString();
 
+    _loadDepartments();
     // Cargar imagen async sin await
     _loadImageUrl();
   }
+  Future<void> _loadDepartments() async {
+    try {
+      final departmentService = Provider.of<DepartmentService>(context, listen: false);
+      final result = await departmentService.fetchAll();
+      setState(() {
+        _departments = result.where((d) => d.isActive).toList();
+        _selectedDepartment = _departments.firstWhere(
+              (d) => d.name == widget.product.departamento,
+          orElse: () => _selectedDepartment!,
+        );
+      });
+    } catch (e) {
+      print('Error al cargar departamentos: $e');
+    }
+  }
+
 
   Future<void> _loadImageUrl() async {
     _currentImageUrl = await imageUrl(widget.product.imagePath);
@@ -86,22 +118,53 @@ class _EditProductFormState extends State<EditProductForm> {
 
   void _submitForm() async {
     if (_formKey.currentState!.validate()) {
+      final scaffoldMessenger = ScaffoldMessenger.of(context);
+      final navigator = Navigator.of(context);
+
       try {
         final productService = Provider.of<ProductService>(context, listen: false);
-        await productService.updateProductWithOptionalImage(
-          id: widget.product.id,
-          sku: _skuController.text,
+        // Crear un objeto Product actualizado para potencialmente pasarlo,
+        // aunque para el flujo actual con onDataChanged solo necesitamos la señal.
+        // Sin embargo, tener el objeto actualizado es buena práctica.
+        final updatedProductData = Product(
+          id: widget.product.id, // Mantener el ID original
+          SKU: _skuController.text,
           nombre: _nombreController.text,
-          marca: _marcaController.text,
-          gradosAlcohol: double.parse(_gradosController.text),
-          tamanio: _tamanioController.text,
-          precioNormal: double.parse(_precioNormalController.text),
+          departamento: _selectedDepartment?.name ?? widget.product.departamento, // Usar el departamento actual si no se cambia
+          precioCosto: double.parse(_precioCostoController.text),
+          precioVenta: double.parse(_precioVentaController.text),
           precioMayoreo: double.parse(_precioMayoreoController.text),
-          stock: int.parse(_stockController.text),
-          imageFile: _selectedImage, // puede ser null
+          precioUnidadVenta: double.parse(_precioUnidadVentaController.text),
+          precioUnidadMayoreo: double.parse(_precioUnidadMayoreoController.text),
+          unidadesPorPresentacion: int.parse(_unidadesPorProductoController.text),
+          stock: double.parse(_stockController.text),
+          stockPorUnidad: widget.product.stockPorUnidad, // Este campo parece que no se edita en el form
+          stockMinimo: int.parse(_stockMinimoController.text),
+          minimoMayoreo: int.parse(_minimoMayoreoController.text),
+          imagePath: widget.product.imagePath, // Se manejará por separado con _selectedImage
+          // Asumir que se mantiene el estado activo
+          // ... otros campos que no se editan directamente en este formulario pero son parte del modelo Product
         );
 
-        ScaffoldMessenger.of(context).showSnackBar(
+        await productService.updateProductWithOptionalImage(
+          id: widget.product.id,
+          sku: updatedProductData.SKU,
+          nombre: updatedProductData.nombre,
+          departamento: updatedProductData.departamento,
+          precioCosto: updatedProductData.precioCosto,
+          precioVenta: updatedProductData.precioVenta,
+          precioMayoreo: updatedProductData.precioMayoreo,
+          precioUnidadVenta: updatedProductData.precioUnidadVenta,
+          precioUnidadMayoreo: updatedProductData.precioUnidadMayoreo,
+          unidadesPorPresentacion: updatedProductData.unidadesPorPresentacion,
+          stock: updatedProductData.stock,
+          stockPorUnidad: updatedProductData.stockPorUnidad,
+          stockMinimo: updatedProductData.stockMinimo,
+          minimoMayoreo: updatedProductData.minimoMayoreo,
+          imageFile: _selectedImage,
+        );
+
+        scaffoldMessenger.showSnackBar(
           SnackBar(
             content: const Text('Producto actualizado exitosamente'),
             backgroundColor: Colors.green.shade400,
@@ -110,10 +173,13 @@ class _EditProductFormState extends State<EditProductForm> {
           ),
         );
 
-        Navigator.of(context).pop();
+        if (mounted) { // Asegúrate de que EditProductForm sigue montado
+          Navigator.of(context).pop(true); // <--- ESTO ES CRUCIAL. Usa el 'context' de EditProductForm.
+        }
+
       } catch (e) {
         print('Error al actualizar producto: $e');
-        ScaffoldMessenger.of(context).showSnackBar(
+        scaffoldMessenger.showSnackBar(
           SnackBar(
             content: Text('Error: $e'),
             backgroundColor: Colors.red.shade400,
@@ -121,6 +187,10 @@ class _EditProductFormState extends State<EditProductForm> {
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           ),
         );
+        // Opcionalmente, pop(false) o no hacer pop para que el usuario pueda reintentar.
+        // if (navigator.canPop()) {
+        //   navigator.pop(false);
+        // }
       }
     }
   }
@@ -129,12 +199,16 @@ class _EditProductFormState extends State<EditProductForm> {
   void dispose() {
     _skuController.dispose();
     _nombreController.dispose();
-    _marcaController.dispose();
-    _gradosController.dispose();
-    _tamanioController.dispose();
-    _precioNormalController.dispose();
-    _precioMayoreoController.dispose();
+    _precioCostoController.dispose();
+    _precioVentaController.dispose();
+    _precioUnidadVentaController.dispose();
+    _precioUnidadMayoreoController.dispose();
     _stockController.dispose();
+    _stockMinimoController.dispose();
+    _minimoMayoreoController.dispose();
+    _unidadesPorProductoController.dispose();
+    _precioMayoreoController.dispose();
+    _stockPorUnidadController.dispose();
     super.dispose();
   }
 
@@ -322,40 +396,64 @@ class _EditProductFormState extends State<EditProductForm> {
                   const SizedBox(height: 16),
 
                   // Campos del formulario en filas de 2
-                  Row(
-                    children: [
-                      Expanded(child: _buildTextField(_skuController, 'SKU', TextInputType.text, Icons.qr_code_outlined)),
-                      const SizedBox(width: 12),
-                      Expanded(child: _buildTextField(_nombreController, 'Nombre', TextInputType.text, Icons.label_outline)),
-                    ],
+                  _buildTextField(_skuController, 'SKU', TextInputType.text, Icons.qr_code_outlined),
+                  const SizedBox(height: 16),
+
+                  _buildTextField(_nombreController, 'Nombre', TextInputType.text, Icons.label_outline),
+                  const SizedBox(height: 16),
+
+                  DropdownButtonFormField<Department>(
+                    value: _selectedDepartment,
+                    decoration: InputDecoration(
+                      labelText: 'Departamento',
+                      prefixIcon: Icon(Icons.store_mall_directory_outlined, color: Colors.grey[600]),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      filled: true,
+                      fillColor: Colors.grey.shade50,
+                    ),
+                    items: _departments.map((dept) {
+                      return DropdownMenuItem(
+                        value: dept,
+                        child: Text(dept.name),
+                      );
+                    }).toList(),
+                    onChanged: (dept) => setState(() => _selectedDepartment = dept),
+                    validator: (value) => value == null ? 'Selecciona un departamento' : null,
                   ),
                   const SizedBox(height: 16),
 
-                  Row(
-                    children: [
-                      Expanded(child: _buildTextField(_marcaController, 'Marca', TextInputType.text, Icons.business_outlined)),
-                      const SizedBox(width: 12),
-                      Expanded(child: _buildTextField(_tamanioController, 'Tamaño', TextInputType.text, Icons.straighten_outlined)),
-                    ],
-                  ),
+                  _buildTextField(_precioCostoController, 'Precio Costo', TextInputType.number, Icons.price_check_outlined),
                   const SizedBox(height: 16),
 
-                  Row(
-                    children: [
-                      Expanded(child: _buildTextField(_gradosController, 'Grados', TextInputType.number, Icons.local_bar_outlined)),
-                      const SizedBox(width: 12),
-                      Expanded(child: _buildTextField(_stockController, 'Stock', TextInputType.number, Icons.inventory_2_outlined)),
-                    ],
-                  ),
+                  _buildTextField(_precioVentaController, 'Precio Venta', TextInputType.number, Icons.attach_money_outlined),
                   const SizedBox(height: 16),
 
-                  Row(
-                    children: [
-                      Expanded(child: _buildTextField(_precioNormalController, 'Precio Normal', TextInputType.number, Icons.attach_money_outlined)),
-                      const SizedBox(width: 12),
-                      Expanded(child: _buildTextField(_precioMayoreoController, 'Precio Mayoreo', TextInputType.number, Icons.money_off_outlined)),
-                    ],
-                  ),
+                  _buildTextField(_precioMayoreoController, 'Precio Mayoreo', TextInputType.number, Icons.monetization_on_outlined),
+                  const SizedBox(height: 16),
+
+                  _buildTextField(_precioUnidadVentaController, 'Precio Unidad Venta', TextInputType.number, Icons.money_outlined),
+                  const SizedBox(height: 16),
+
+                  _buildTextField(_precioUnidadMayoreoController, 'Precio Unidad Mayoreo', TextInputType.number, Icons.monetization_on_outlined),
+                  const SizedBox(height: 16),
+
+                  _buildTextField(_unidadesPorProductoController, 'Unidades por Producto', TextInputType.number, Icons.format_list_numbered_outlined),
+                  const SizedBox(height: 16),
+
+                  _buildTextField(_stockController, 'Stock', TextInputType.number, Icons.inventory_2_outlined),
+                  const SizedBox(height: 16),
+
+                  _buildTextField(_stockPorUnidadController, 'Stock por unidad', TextInputType.number, Icons.inventory_2_outlined),
+                  const SizedBox(height: 16),
+
+                  _buildTextField(_stockMinimoController, 'Stock Mínimo', TextInputType.number, Icons.remove_shopping_cart_outlined),
+                  const SizedBox(height: 16),
+
+                  _buildTextField(_minimoMayoreoController, 'Mínimo Mayoreo', TextInputType.number, Icons.stacked_line_chart_outlined),
+                  const SizedBox(height: 32),
+
+                  const SizedBox(height: 16),
+
                   const SizedBox(height: 32),
 
                   // Botones

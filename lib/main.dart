@@ -1,10 +1,14 @@
 // main.dart
 import 'package:flutter/material.dart';
+import 'package:pos_app/services/client_service.dart';
+import 'package:pos_app/services/department_service.dart';
 import 'package:pos_app/services/resume_service.dart';
+import 'package:pos_app/services/salidas_service.dart';
+import 'package:pos_app/services/ticketSettings_service.dart';
 import 'package:pos_app/services/user_service.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-
+import 'package:intl/date_symbol_data_local.dart';
 
 import 'ui/screens/login_screen.dart';
 import 'ui/screens/home_screen.dart';
@@ -12,8 +16,10 @@ import 'services/auth_service.dart';
 import 'services/product_service.dart';
 import 'services/sale_service.dart';
 
-void main() {
-  runApp(const PosApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized(); // Si aún no lo tienes
+  await initializeDateFormatting('es_ES', null);
+  runApp(PosApp());
 }
 
 class PosApp extends StatelessWidget {
@@ -28,6 +34,10 @@ class PosApp extends StatelessWidget {
         Provider<SaleService>(create: (_) => SaleService()),
         Provider<ResumeService>(create: (_) => ResumeService()),
         Provider<UserService>(create: (_) => UserService()),
+        Provider<DepartmentService>(create: (_) => DepartmentService()),
+        Provider<ClientService>(create: (_) => ClientService()),
+        Provider<TicketSettingsService>(create: (_) => TicketSettingsService()),
+        Provider<SalidasService>(create: (_) => SalidasService()),
       ],
       child: MaterialApp(
         title: 'POS Cervecería',

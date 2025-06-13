@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
+import 'package:pos_app/models/product/product_Inventory_entry.dart';
 import '../config.dart';
 import 'authenticated_client.dart';
 
@@ -43,6 +44,110 @@ class ProductService {
       throw Exception('Error fetching products: \${response.statusCode}');
     }
   }
+  Future<List<ProductInventoryEntry>> fetchAllEntriesByProduct(int id) async {
+    final baseUrl = await getApiBaseUrl();
+    final response = await _client.get(
+      Uri.parse('$baseUrl/api/inventory/entry/product')
+          .replace(queryParameters: {'id': id.toString()}),
+      headers: {'Content-Type': 'application/json'},
+    );
+    if (response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body);
+      return data.map((e) => ProductInventoryEntry.fromJson(e)).toList();
+    } else {
+      throw Exception('Error fetching products entries: ${response.statusCode}');
+    }
+  }
+
+  Future<double> getCostoInventarioPorProducto(int id) async {
+    final baseUrl = await getApiBaseUrl();
+    final response = await _client.get(
+      Uri.parse('$baseUrl/api/products/costo/producto')
+      .replace(queryParameters: {'id': id.toString()}),
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final String responseBodyString = response.body;
+      print('Total Balance Response body: $responseBodyString');
+
+      try {
+        final dynamic decodedBody = jsonDecode(responseBodyString);
+
+        if (decodedBody is String) {
+          final num? parsedNum = num.tryParse(decodedBody);
+          if (parsedNum != null) {
+            return parsedNum.toDouble();
+          } else {
+            print(
+                'Error: Could not parse string value from JSON as a number: $decodedBody');
+            throw Exception('Failed to parse total balance string from JSON');
+          }
+        } else if (decodedBody is num) {
+          return decodedBody.toDouble();
+        } else {
+          print('Error: Unexpected JSON type for total balance: ${decodedBody
+              .runtimeType}');
+          throw Exception('Unexpected JSON type for total balance');
+        }
+      } catch (e) {
+        print('Error decoding or parsing total balance JSON: $e');
+        throw Exception('Failed to decode or parse total balance JSON');
+      }
+    } else {
+      print('Error fetching Total Balance: ${response
+          .statusCode}, Body: ${response.body}');
+      throw Exception('Error fetching Total Balance: ${response.statusCode}');
+    }
+  }
+
+  Future<double> getCostoInventarioTotal() async {
+    final baseUrl = await getApiBaseUrl();
+    final response = await _client.get(
+      Uri.parse('$baseUrl/api/products/costo/total'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final String responseBodyString = response.body;
+      print('Total Balance Response body: $responseBodyString');
+
+      try {
+        final dynamic decodedBody = jsonDecode(responseBodyString);
+
+        if (decodedBody is String) {
+          final num? parsedNum = num.tryParse(decodedBody);
+          if (parsedNum != null) {
+            return parsedNum.toDouble();
+          } else {
+            print(
+                'Error: Could not parse string value from JSON as a number: $decodedBody');
+            throw Exception('Failed to parse total balance string from JSON');
+          }
+        } else if (decodedBody is num) {
+          return decodedBody.toDouble();
+        } else {
+          print('Error: Unexpected JSON type for total balance: ${decodedBody
+              .runtimeType}');
+          throw Exception('Unexpected JSON type for total balance');
+        }
+      } catch (e) {
+        print('Error decoding or parsing total balance JSON: $e');
+        throw Exception('Failed to decode or parse total balance JSON');
+      }
+    } else {
+      print('Error fetching Total Balance: ${response
+          .statusCode}, Body: ${response.body}');
+      throw Exception('Error fetching Total Balance: ${response.statusCode}');
+    }
+  }
+
 
   Future<void> sendAltaProductos(List<AltaProduct> productos) async {
     final baseUrl = await getApiBaseUrl();
@@ -65,12 +170,17 @@ class ProductService {
     required int id,
     required String sku,
     required String nombre,
-    required String marca,
-    required double gradosAlcohol,
-    required String tamanio,
-    required double precioNormal,
+    required String departamento,
+    required double precioCosto,
+    required double precioVenta,
     required double precioMayoreo,
-    required int stock,
+    required double precioUnidadVenta,
+    required double precioUnidadMayoreo,
+    required int unidadesPorPresentacion,
+    required double stock,
+    required int stockPorUnidad,
+    required int stockMinimo,
+    required int minimoMayoreo,
     File? imageFile, // puede ser null
   }) async {
     final baseUrl = await getApiBaseUrl();
@@ -81,13 +191,19 @@ class ProductService {
 
     request.fields['sku'] = sku;
     request.fields['nombre'] = nombre;
-    request.fields['marca'] = marca;
-    request.fields['gradosAlcohol'] = gradosAlcohol.toString();
-    request.fields['tamanio'] = tamanio;
-    request.fields['precioNormal'] = precioNormal.toString();
+    request.fields['departamento'] = departamento;
+    request.fields['precioCosto'] = precioCosto.toString();
+    request.fields['precioVenta'] = precioVenta.toString();
     request.fields['precioMayoreo'] = precioMayoreo.toString();
+    request.fields['precioUnidadVenta'] = precioUnidadVenta.toString();
+    request.fields['precioUnidadMayoreo'] = precioUnidadMayoreo.toString();
+    request.fields['unidadesPorPresentacion'] = unidadesPorPresentacion.toString();
     request.fields['stock'] = stock.toString();
+    request.fields['stockPorUnidad'] = stockPorUnidad.toString();
+    request.fields['stockMinimo'] = stockMinimo.toString();
+    request.fields['minimoMayoreo'] = minimoMayoreo.toString();
 
+    // Si imageFile es null, no se agrega al request
     if (imageFile != null) {
       request.files.add(await http.MultipartFile.fromPath('imagen', imageFile.path));
     }
@@ -126,12 +242,15 @@ class ProductService {
   Future<void> uploadProductWithImage({
     required String sku,
     required String nombre,
-    required String marca,
-    required double gradosAlcohol,
-    required String tamanio,
-    required double precioNormal,
+    required String departamento,
+    required double precioCosto,
+    required double precioVenta,
     required double precioMayoreo,
-    required int stock,
+    required double precioUnidadVenta,
+    required double stock,
+    required int stockMinimo,
+    required int unidadesPorPresentacion,
+    required String minimoMayoreo,
     required File imageFile,
   }) async {
     final baseUrl = await getApiBaseUrl();
@@ -142,12 +261,16 @@ class ProductService {
 
     request.fields['sku'] = sku;
     request.fields['nombre'] = nombre;
-    request.fields['marca'] = marca;
-    request.fields['gradosAlcohol'] = gradosAlcohol.toString();
-    request.fields['tamanio'] = tamanio;
-    request.fields['precioNormal'] = precioNormal.toString();
+    request.fields['departamento'] = departamento;
+    request.fields['precioCosto'] = precioCosto.toString();
+    request.fields['precioVenta'] = precioVenta.toString();
     request.fields['precioMayoreo'] = precioMayoreo.toString();
+    request.fields['precioUnidadVenta'] = precioUnidadVenta.toString();
     request.fields['stock'] = stock.toString();
+    request.fields['stockMinimo'] = stockMinimo.toString();
+    request.fields['unidadesPorPresentacion'] = unidadesPorPresentacion.toString();
+    request.fields['minimoMayoreo'] = minimoMayoreo;
+
 
     request.files.add(await http.MultipartFile.fromPath('imagen', imageFile.path));
 
@@ -159,5 +282,20 @@ class ProductService {
     }
   }
 
+  Future<String> updateEntry(ProductInventoryEntry entry) async {
+    int id = entry.id;
+    print(entry.toJson());
+    final baseUrl = await getApiBaseUrl();
+    final response = await _client.put(
+      Uri.parse('$baseUrl/api/inventory/update/$id'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode(entry.toJson()),
+    );
+    if (response.statusCode == 200) {
+      return "Entrada actualizada correctamente";
+    } else {
+      throw Exception('Error creating entrada: ${response.statusCode}');
+    }
+  }
 
 }

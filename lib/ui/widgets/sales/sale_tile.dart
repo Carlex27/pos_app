@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:pos_app/ui/widgets/sales/sale_description.dart';
 import '../../../models/sales/sale_response.dart';
 
-class SaleTile extends StatelessWidget {
+class SaleTile extends StatefulWidget {
   final SaleResponse sale;
 
   const SaleTile({
@@ -10,7 +11,79 @@ class SaleTile extends StatelessWidget {
   }) : super(key: key);
 
   @override
+  State<SaleTile> createState() => _SaleTileState();
+}
+
+class _SaleTileState extends State<SaleTile> with SingleTickerProviderStateMixin {
+  late AnimationController _animationController;
+  late Animation<double> _scaleAnimation;
+  bool _isPressed = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 150),
+      vsync: this,
+    );
+    _scaleAnimation = Tween<double>(
+      begin: 1.0,
+      end: 0.98,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeInOut,
+    ));
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  void _onTapDown(TapDownDetails details) {
+    setState(() => _isPressed = true);
+    _animationController.forward();
+  }
+
+  void _onTapUp(TapUpDetails details) {
+    setState(() => _isPressed = false);
+    _animationController.reverse();
+  }
+
+  void _onTapCancel() {
+    setState(() => _isPressed = false);
+    _animationController.reverse();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _scaleAnimation,
+      builder: (context, child) {
+        return Transform.scale(
+          scale: _scaleAnimation.value,
+          child: GestureDetector(
+            onTapDown: _onTapDown,
+            onTapUp: _onTapUp,
+            onTapCancel: _onTapCancel,
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => SaleDescription(sale: widget.sale),
+                ),
+              );
+            },
+            child: _buildSaleContent(),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildSaleContent() {
+    final sale = widget.sale;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
@@ -29,56 +102,38 @@ class SaleTile extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header con información principal
+          // Header
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Información del cliente y vendedor
+              // Cliente y vendedor
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Nombre del cliente
                     Text(
                       sale.clientName,
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
                         color: Color(0xFF2D3748),
-                        letterSpacing: 0.2,
                       ),
                     ),
                     const SizedBox(height: 4),
-
-                    // Vendedor
                     Text(
                       'Vendedor: ${sale.vendorName}',
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: Colors.grey[600],
-                        fontWeight: FontWeight.w400,
-                      ),
+                      style: TextStyle(fontSize: 13, color: Colors.grey[600]),
                     ),
                     const SizedBox(height: 4),
-
-                    // Fecha y hora con icono
                     Row(
                       children: [
-                        Icon(
-                          Icons.access_time,
-                          size: 14,
-                          color: Colors.grey[500],
-                        ),
+                        Icon(Icons.access_time, size: 14, color: Colors.grey[500]),
                         const SizedBox(width: 4),
                         Flexible(
                           child: Text(
                             _formatDate(sale.saleDate),
                             overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: Colors.grey[600],
-                              fontWeight: FontWeight.w400,
-                            ),
+                            style: TextStyle(fontSize: 13, color: Colors.grey[600]),
                           ),
                         ),
                       ],
@@ -87,11 +142,10 @@ class SaleTile extends StatelessWidget {
                 ),
               ),
 
-              // Total y cantidad de items
+              // Total y productos
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  // Total con estilo mejorado
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
@@ -104,29 +158,17 @@ class SaleTile extends StatelessWidget {
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                         color: Color(0xFF00D4AA),
-                        letterSpacing: 0.3,
                       ),
                     ),
                   ),
                   const SizedBox(height: 6),
-
-                  // Cantidad de items con icono
                   Row(
-                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(
-                        Icons.shopping_cart_outlined,
-                        size: 14,
-                        color: Colors.grey[500],
-                      ),
+                      Icon(Icons.shopping_cart_outlined, size: 14, color: Colors.grey[500]),
                       const SizedBox(width: 4),
                       Text(
                         '${sale.itemCount} productos',
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: Colors.grey[600],
-                          fontWeight: FontWeight.w500,
-                        ),
+                        style: TextStyle(fontSize: 13, color: Colors.grey[600]),
                       ),
                     ],
                   ),
@@ -135,7 +177,6 @@ class SaleTile extends StatelessWidget {
             ],
           ),
 
-          // Lista de productos (si existen)
           if (sale.items != null && sale.items!.isNotEmpty) ...[
             const SizedBox(height: 16),
             Container(
@@ -143,49 +184,34 @@ class SaleTile extends StatelessWidget {
               decoration: BoxDecoration(
                 color: Colors.grey.shade50,
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(
-                  color: Colors.grey.shade200,
-                  width: 1,
-                ),
+                border: Border.all(color: Colors.grey.shade200),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    'Productos:',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.grey[700],
+                  Text('Productos:', style: TextStyle(fontWeight: FontWeight.w600, color: Colors.grey[700])),
+                  const SizedBox(height: 8),
+                  ...sale.items!.map(
+                        (item) => Padding(
+                      padding: const EdgeInsets.only(bottom: 6),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              '${item.nombre} x${item.cantidad}',
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(fontSize: 14, color: Color(0xFF2D3748)),
+                            ),
+                          ),
+                          Text(
+                            '\$${(item.precio * item.cantidad).toStringAsFixed(2)}',
+                            style: TextStyle(fontWeight: FontWeight.w600, color: Colors.grey[700]),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  ...sale.items!.map((item) => Padding(
-                    padding: const EdgeInsets.only(bottom: 6),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: Text(
-                            '${item.nombre} x${item.cantidad}',
-                            style: const TextStyle(
-                              fontSize: 14,
-                              color: Color(0xFF2D3748),
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        Text(
-                          '\$${(item.precio * item.cantidad).toStringAsFixed(2)}',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.grey[700],
-                          ),
-                        ),
-                      ],
-                    ),
-                  )).toList(),
                 ],
               ),
             ),
@@ -196,19 +222,16 @@ class SaleTile extends StatelessWidget {
   }
 
   String _formatDate(DateTime dateTime) {
-    // Formato: 1/20/2024, 10:30:00 AM
-    String month = dateTime.month.toString();
-    String day = dateTime.day.toString();
-    String year = dateTime.year.toString();
+    final month = dateTime.month;
+    final day = dateTime.day;
+    final year = dateTime.year;
+    final hour = dateTime.hour;
+    final minute = dateTime.minute;
+    final second = dateTime.second;
 
-    int hour = dateTime.hour;
-    int minute = dateTime.minute;
-    int second = dateTime.second;
-
-    String period = hour >= 12 ? 'PM' : 'AM';
-    int displayHour = hour == 0 ? 12 : (hour > 12 ? hour - 12 : hour);
-
-    String formattedTime = '${displayHour.toString()}:${minute.toString().padLeft(2, '0')}:${second.toString().padLeft(2, '0')} $period';
+    final period = hour >= 12 ? 'PM' : 'AM';
+    final displayHour = hour == 0 ? 12 : (hour > 12 ? hour - 12 : hour);
+    final formattedTime = '$displayHour:${minute.toString().padLeft(2, '0')}:${second.toString().padLeft(2, '0')} $period';
 
     return '$month/$day/$year, $formattedTime';
   }

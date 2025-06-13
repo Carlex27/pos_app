@@ -1,27 +1,25 @@
 import 'package:flutter/material.dart';
-import '../../../models/product/product.dart';
-import '../../../config.dart';
-import 'edit_product_form.dart';
-import '../../../services/product_service.dart';
+import 'package:pos_app/ui/widgets/client/client_form.dart';
 import 'package:provider/provider.dart';
-import 'product_description.dart';
+import '../../../models/client/client.dart';
+import '../../../services/client_service.dart';
+import 'client_description.dart';
 
-
-class ProductTile extends StatefulWidget {
-  final Product product;
+class ClientTile extends StatefulWidget {
+  final Client client;
   final VoidCallback onDataChanged;
 
-  const ProductTile({
+  const ClientTile({
     Key? key,
-    required this.product,
+    required this.client,
     required this.onDataChanged,
   }) : super(key: key);
 
   @override
-  State<ProductTile> createState() => _ProductTileState();
+  State<ClientTile> createState() => _ClientTileState();
 }
 
-class _ProductTileState extends State<ProductTile>
+class _ClientTileState extends State<ClientTile>
     with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _scaleAnimation;
@@ -49,14 +47,6 @@ class _ProductTileState extends State<ProductTile>
     super.dispose();
   }
 
-  Future<String> imageUrl(String? imagePath) async {
-    final baseUrl = await getApiBaseUrl();
-    if (imagePath == null || imagePath.isEmpty) {
-      return '$baseUrl/images/default.png';
-    }
-    return '$baseUrl$imagePath';
-  }
-
   void _onTapDown(TapDownDetails details) {
     setState(() => _isPressed = true);
     _animationController.forward();
@@ -74,8 +64,6 @@ class _ProductTileState extends State<ProductTile>
 
   @override
   Widget build(BuildContext context) {
-    final currentContext = context; // Guardar el contexto para usarlo en callbacks asíncronos
-
     return AnimatedBuilder(
       animation: _scaleAnimation,
       builder: (context, child) {
@@ -85,20 +73,15 @@ class _ProductTileState extends State<ProductTile>
             onTapDown: _onTapDown,
             onTapUp: _onTapUp,
             onTapCancel: _onTapCancel,
-            // En product_tile.dart, dentro del GestureDetector o donde manejes el tap para ver detalles
-
-
-            onTap: () async { // Asegúrate que el método sea async
-              // 'context' aquí es el context del build del ProductTile
-              final result = await Navigator.of(context).push<String>( // Espera un String
+            onTap: () async {
+              final result = await Navigator.of(context).push<String>(
                 MaterialPageRoute(
-                  builder: (_) => ProductDescription(product: widget.product),
+                  builder: (_) => ClientDescription(client: widget.client),
                 ),
               );
 
-              // Verifica si el ProductTile sigue montado y si hubo un resultado
               if (mounted && (result == "updated" || result == "deleted")) {
-                widget.onDataChanged(); // Llama al callback para que ProductsScreen haga fetch
+                widget.onDataChanged();
               }
             },
             child: Container(
@@ -136,28 +119,28 @@ class _ProductTileState extends State<ProductTile>
                     padding: const EdgeInsets.all(20),
                     child: Column(
                       children: [
-                        // Header con imagen y acciones
+                        // Header con avatar y acciones
                         Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // Imagen del producto mejorada
-                            _buildProductImage(),
+                            // Avatar del cliente
+                            _buildClientAvatar(),
 
                             const SizedBox(width: 16),
 
                             // Información principal
-                            Expanded(child: _buildProductInfo()),
+                            Expanded(child: _buildClientInfo()),
 
                             const SizedBox(width: 12),
 
-                            // Botones de acción mejorados
+                            // Botones de acción
                             _buildActionButtons(),
                           ],
                         ),
 
                         const SizedBox(height: 16),
 
-                        // Footer con precios y stock
+                        // Footer con saldo y límite de crédito
                         _buildFooterInfo(),
                       ],
                     ),
@@ -171,43 +154,7 @@ class _ProductTileState extends State<ProductTile>
     );
   }
 
-  Widget _buildProductImage() {
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(12),
-        child: FutureBuilder<String>(
-          future: imageUrl(widget.product.imagePath),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return _buildImagePlaceholder(isLoading: true);
-            } else if (snapshot.hasError || !snapshot.hasData) {
-              return _buildImagePlaceholder();
-            } else {
-              return Image.network(
-                snapshot.data!,
-                width: 80,
-                height: 80,
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => _buildImagePlaceholder(),
-              );
-            }
-          },
-        ),
-      ),
-    );
-  }
-
-  Widget _buildImagePlaceholder({bool isLoading = false}) {
+  Widget _buildClientAvatar() {
     return Container(
       width: 80,
       height: 80,
@@ -216,37 +163,41 @@ class _ProductTileState extends State<ProductTile>
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            Colors.grey.shade200,
-            Colors.grey.shade300,
+            Colors.blue.shade400,
+            Colors.blue.shade600,
           ],
         ),
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.blue.withOpacity(0.3),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
-      child: isLoading
-          ? Center(
-        child: SizedBox(
-          width: 20,
-          height: 20,
-          child: CircularProgressIndicator(
-            strokeWidth: 2,
-            valueColor: AlwaysStoppedAnimation<Color>(Colors.grey.shade600),
+      child: Center(
+        child: Text(
+          widget.client.name.isNotEmpty
+              ? widget.client.name.substring(0, 1).toUpperCase()
+              : 'C',
+          style: const TextStyle(
+            fontSize: 32,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
           ),
         ),
-      )
-          : Icon(
-        Icons.inventory_2_outlined,
-        color: Colors.grey.shade600,
-        size: 32,
       ),
     );
   }
 
-  Widget _buildProductInfo() {
+  Widget _buildClientInfo() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Nombre del producto
+        // Nombre del cliente
         Text(
-          widget.product.nombre,
+          widget.client.name,
           style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w700,
@@ -257,31 +208,67 @@ class _ProductTileState extends State<ProductTile>
           overflow: TextOverflow.ellipsis,
         ),
 
-        const SizedBox(height: 6),
-
-        // SKU con badge
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-          decoration: BoxDecoration(
-            color: Colors.blue.shade50,
-            borderRadius: BorderRadius.circular(6),
-            border: Border.all(
-              color: Colors.blue.shade200,
-              width: 1,
-            ),
-          ),
-          child: Text(
-            'SKU: ${widget.product.SKU}',
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: Colors.blue.shade700,
-            ),
-          ),
-        ),
-
         const SizedBox(height: 8),
 
+        // Dirección
+        Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade100,
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Icon(
+                Icons.location_on_outlined,
+                size: 14,
+                color: Colors.grey.shade600,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                widget.client.direction,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey.shade700,
+                  fontWeight: FontWeight.w500,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
+
+        const SizedBox(height: 6),
+
+        // Teléfono
+        Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade100,
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Icon(
+                Icons.phone_outlined,
+                size: 14,
+                color: Colors.grey.shade600,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              widget.client.phoneNumber,
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey.shade700,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
       ],
     );
   }
@@ -291,7 +278,6 @@ class _ProductTileState extends State<ProductTile>
       children: [
         // Botón editar
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
           decoration: BoxDecoration(
             color: Colors.green.shade50,
             borderRadius: BorderRadius.circular(8),
@@ -300,20 +286,74 @@ class _ProductTileState extends State<ProductTile>
               width: 1,
             ),
           ),
-          child: InkWell(
-            onTap: (){
-              showDialog(
-                context: context,
-                builder: (_) => EditProductForm(product: widget.product),
-
-              );
-
-            },
-            borderRadius: BorderRadius.circular(8),
-            child: Icon(
-              Icons.edit_outlined,
-              size: 18,
-              color: Colors.green.shade600,
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: () {
+                showDialog(
+                  context: context,
+                  barrierDismissible: false,
+                  builder: (dialogContext) => ClientForm(
+                    client: widget.client,
+                    isEditing: true,
+                    onSave: (updatedClient) async {
+                      final clientService = Provider.of<ClientService>(context, listen: false);
+                      try {
+                        await clientService.update(updatedClient);
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: const Row(
+                                children: [
+                                  Icon(Icons.check_circle, color: Colors.white),
+                                  SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text('Cliente actualizado exitosamente'),
+                                  ),
+                                ],
+                              ),
+                              backgroundColor: Colors.green.shade600,
+                              behavior: SnackBarBehavior.floating,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                          );
+                          widget.onDataChanged();
+                        }
+                      } catch (e) {
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Row(
+                                children: [
+                                  const Icon(Icons.error_outline, color: Colors.white),
+                                  const SizedBox(width: 8),
+                                  Expanded(child: Text('Error al actualizar cliente: $e')),
+                                ],
+                              ),
+                              backgroundColor: Colors.red.shade600,
+                              behavior: SnackBarBehavior.floating,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                          );
+                        }
+                      }
+                    },
+                  ),
+                );
+              },
+              borderRadius: BorderRadius.circular(8),
+              child: Padding(
+                padding: const EdgeInsets.all(10),
+                child: Icon(
+                  Icons.edit_outlined,
+                  size: 18,
+                  color: Colors.green.shade600,
+                ),
+              ),
             ),
           ),
         ),
@@ -356,6 +396,11 @@ class _ProductTileState extends State<ProductTile>
   }
 
   Widget _buildFooterInfo() {
+    final double availableCredit = widget.client.creditLimit - widget.client.balance;
+    final double creditUsagePercentage = widget.client.creditLimit > 0
+        ? (widget.client.balance / widget.client.creditLimit) * 100
+        : 0;
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -368,14 +413,14 @@ class _ProductTileState extends State<ProductTile>
       ),
       child: Row(
         children: [
-          // Precios
+          // Saldo actual
           Expanded(
             flex: 2,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Precios',
+                  'Saldo Actual',
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
@@ -383,58 +428,24 @@ class _ProductTileState extends State<ProductTile>
                   ),
                 ),
                 const SizedBox(height: 4),
-                Row(
-                  children: [
-                    // Precio normal
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: Colors.green.shade50,
-                        borderRadius: BorderRadius.circular(6),
-                        border: Border.all(
-                          color: Colors.green.shade200,
-                          width: 1,
-                        ),
-                      ),
-                      child: Text(
-                        '\$${widget.product.precioVenta.toStringAsFixed(2)}',
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.green.shade700,
-                        ),
-                      ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: _getBalanceColor().withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(
+                      color: _getBalanceColor().withOpacity(0.3),
+                      width: 1,
                     ),
-                    const SizedBox(width: 6),
-                    Text(
-                      '•',
-                      style: TextStyle(
-                        color: Colors.grey.shade500,
-                        fontWeight: FontWeight.bold,
-                      ),
+                  ),
+                  child: Text(
+                    '\$${widget.client.balance.toStringAsFixed(2)}',
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      color: _getBalanceColor(),
                     ),
-                    const SizedBox(width: 6),
-                    // Precio mayoreo
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: Colors.orange.shade50,
-                        borderRadius: BorderRadius.circular(6),
-                        border: Border.all(
-                          color: Colors.orange.shade200,
-                          width: 1,
-                        ),
-                      ),
-                      child: Text(
-                        '\$${widget.product.precioMayoreo.toStringAsFixed(2)}',
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.orange.shade700,
-                        ),
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
               ],
             ),
@@ -443,19 +454,20 @@ class _ProductTileState extends State<ProductTile>
           // Divisor
           Container(
             width: 1,
-            height: 40,
+            height: 50,
             color: Colors.grey.shade300,
           ),
 
           const SizedBox(width: 16),
 
-          // Stock
+          // Límite de crédito y disponible
           Expanded(
+            flex: 2,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Inventario',
+                  'Crédito Disponible',
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
@@ -463,32 +475,53 @@ class _ProductTileState extends State<ProductTile>
                   ),
                 ),
                 const SizedBox(height: 4),
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(4),
-                      decoration: BoxDecoration(
-                        color: _getStockColor().withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Icon(
-                        _getStockIcon(),
-                        size: 16,
-                        color: _getStockColor(),
-                      ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.shade50,
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(
+                      color: Colors.blue.shade200,
+                      width: 1,
                     ),
-                    const SizedBox(width: 8),
-                    Text(
-                      '${widget.product.stock}',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        color: _getStockColor(),
-                      ),
+                  ),
+                  child: Text(
+                    '\$${availableCredit.toStringAsFixed(2)}',
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.blue.shade700,
                     ),
-                  ],
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Límite: \$${widget.client.creditLimit.toStringAsFixed(2)}',
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: Colors.grey.shade600,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ],
+            ),
+          ),
+
+          // Indicador visual del uso de crédito
+          const SizedBox(width: 12),
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: _getCreditStatusColor().withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Center(
+              child: Icon(
+                _getCreditStatusIcon(),
+                size: 20,
+                color: _getCreditStatusColor(),
+              ),
             ),
           ),
         ],
@@ -496,15 +529,30 @@ class _ProductTileState extends State<ProductTile>
     );
   }
 
-  Color _getStockColor() {
-    if (widget.product.stock <= 2) return Colors.red.shade600;
-    if (widget.product.stock <= 5) return Colors.orange.shade600;
+  Color _getBalanceColor() {
+    if (widget.client.balance <= 0) return Colors.green.shade600;
+    if (widget.client.balance >= widget.client.creditLimit * 0.8) return Colors.red.shade600;
+    if (widget.client.balance >= widget.client.creditLimit * 0.5) return Colors.orange.shade600;
+    return Colors.blue.shade600;
+  }
+
+  Color _getCreditStatusColor() {
+    final double usage = widget.client.creditLimit > 0
+        ? widget.client.balance / widget.client.creditLimit
+        : 0;
+
+    if (usage >= 0.9) return Colors.red.shade600;
+    if (usage >= 0.7) return Colors.orange.shade600;
     return Colors.green.shade600;
   }
 
-  IconData _getStockIcon() {
-    if (widget.product.stock <= 2) return Icons.warning_outlined;
-    if (widget.product.stock <= 5) return Icons.info_outlined;
+  IconData _getCreditStatusIcon() {
+    final double usage = widget.client.creditLimit > 0
+        ? widget.client.balance / widget.client.creditLimit
+        : 0;
+
+    if (usage >= 0.9) return Icons.warning_outlined;
+    if (usage >= 0.7) return Icons.info_outlined;
     return Icons.check_circle_outlined;
   }
 
@@ -532,7 +580,7 @@ class _ProductTileState extends State<ProductTile>
             const SizedBox(width: 12),
             const Expanded(
               child: Text(
-                'Eliminar producto',
+                'Eliminar cliente',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
@@ -542,7 +590,7 @@ class _ProductTileState extends State<ProductTile>
           ],
         ),
         content: Text(
-          '¿Estás seguro de que quieres eliminar "${widget.product.nombre}"?\n\nEsta acción no se puede deshacer.',
+          '¿Estás seguro de que quieres eliminar a "${widget.client.name}"?\n\nEsta acción no se puede deshacer.',
           style: const TextStyle(fontSize: 16),
         ),
         actions: [
@@ -561,8 +609,8 @@ class _ProductTileState extends State<ProductTile>
           ElevatedButton(
             onPressed: () async {
               try {
-                final productService = Provider.of<ProductService>(context, listen: false);
-                await productService.delete(widget.product.id);
+                final clientService = Provider.of<ClientService>(context, listen: false);
+                await clientService.delete(widget.client.id);
 
                 Navigator.of(context).pop();
 
@@ -573,7 +621,7 @@ class _ProductTileState extends State<ProductTile>
                         const Icon(Icons.check_circle, color: Colors.white),
                         const SizedBox(width: 8),
                         Expanded(
-                          child: Text('Producto "${widget.product.nombre}" eliminado correctamente'),
+                          child: Text('Cliente "${widget.client.name}" eliminado correctamente'),
                         ),
                       ],
                     ),
@@ -584,6 +632,8 @@ class _ProductTileState extends State<ProductTile>
                     ),
                   ),
                 );
+
+                widget.onDataChanged();
               } catch (e) {
                 Navigator.of(context).pop();
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -592,7 +642,7 @@ class _ProductTileState extends State<ProductTile>
                       children: [
                         const Icon(Icons.error_outline, color: Colors.white),
                         const SizedBox(width: 8),
-                        Expanded(child: Text('Error al eliminar el producto: $e')),
+                        Expanded(child: Text('Error al eliminar el cliente: $e')),
                       ],
                     ),
                     backgroundColor: Colors.red.shade600,

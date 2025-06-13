@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:pos_app/models/department/department.dart';
+import 'package:pos_app/services/department_service.dart';
 import 'package:provider/provider.dart';
 import '../../../services/product_service.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -10,6 +12,8 @@ class NewProductForm extends StatefulWidget {
 
   @override
   State<NewProductForm> createState() => _NewProductFormState();
+
+
 }
 
 class _NewProductFormState extends State<NewProductForm> {
@@ -17,14 +21,20 @@ class _NewProductFormState extends State<NewProductForm> {
 
   final _skuController = TextEditingController();
   final _nombreController = TextEditingController();
-  final _marcaController = TextEditingController();
-  final _gradosController = TextEditingController();
-  final _tamanioController = TextEditingController();
-  final _precioNormalController = TextEditingController();
+  final _precioCostoController = TextEditingController();
+  final _precioVentaController = TextEditingController();
   final _precioMayoreoController = TextEditingController();
+  final _precioUnidadVentaController = TextEditingController();
+  final _precioUnidadMayoreoController = TextEditingController();
   final _stockController = TextEditingController();
+  final _stockMinimoController = TextEditingController();
+  final _minimoMayoreoController = TextEditingController();
+  final _unidadesPorPresentacionController = TextEditingController();
 
   File? _selectedImage;
+
+  List<Department> _departments = [];
+  Department? _selectedDepartment;
 
   Future<void> _pickImage() async {
     final status = await Permission.photos.request();
@@ -46,17 +56,37 @@ class _NewProductFormState extends State<NewProductForm> {
       );
     }
   }
+  Future<void> _loadDepartments() async {
+    try {
+      final departmentService = Provider.of<DepartmentService>(context, listen: false);
+      final result = await departmentService.fetchAll();
+      setState(() {
+        _departments = result.where((d) => d.isActive).toList();
+      });
+    } catch (e) {
+      print('Error al cargar departamentos: $e');
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _loadDepartments();
+  }
 
   @override
   void dispose() {
     _skuController.dispose();
     _nombreController.dispose();
-    _marcaController.dispose();
-    _gradosController.dispose();
-    _tamanioController.dispose();
-    _precioNormalController.dispose();
-    _precioMayoreoController.dispose();
+    _precioCostoController.dispose();
+    _precioVentaController.dispose();
+    _precioUnidadVentaController.dispose();
+    _precioUnidadMayoreoController.dispose();
     _stockController.dispose();
+    _stockMinimoController.dispose();
+    _minimoMayoreoController.dispose();
+    _unidadesPorPresentacionController.dispose();
+    _precioMayoreoController.dispose();
     super.dispose();
   }
 
@@ -74,22 +104,34 @@ class _NewProductFormState extends State<NewProductForm> {
         return;
       }
 
+      // Guardar el contexto del ScaffoldMessenger ANTES de operaciones async
+      // que podrían hacer que el widget se desmonte o el contexto cambie.
+      final scaffoldMessenger = ScaffoldMessenger.of(context);
+      final navigator = Navigator.of(context); // Guardar Navigator también
+
       try {
         final productService = Provider.of<ProductService>(context, listen: false);
 
         await productService.uploadProductWithImage(
           sku: _skuController.text,
           nombre: _nombreController.text,
-          marca: _marcaController.text,
-          gradosAlcohol: double.parse(_gradosController.text),
-          tamanio: _tamanioController.text,
-          precioNormal: double.parse(_precioNormalController.text),
+          departamento: _selectedDepartment?.name ?? '',
+          precioCosto: double.parse(_precioCostoController.text),
+          precioVenta: double.parse(_precioVentaController.text),
           precioMayoreo: double.parse(_precioMayoreoController.text),
-          stock: int.parse(_stockController.text),
+          // Asegúrate de que este campo esté presente en tu servicio y modelo si lo necesitas
+          precioUnidadVenta: double.parse(_precioUnidadVentaController.text),
+          // Este campo faltaba en tu llamada original al servicio en NewProductForm,
+          // pero estaba presente en los controladores. Asegúrate de incluirlo si es necesario.
+          // precioUnidadMayoreo: double.parse(_precioUnidadMayoreoController.text), // Asegúrate de esto también
+          stock: double.parse(_stockController.text),
+          stockMinimo: int.parse(_stockMinimoController.text),
+          unidadesPorPresentacion: int.parse(_unidadesPorPresentacionController.text),
+          minimoMayoreo: _minimoMayoreoController.text,
           imageFile: _selectedImage!,
         );
 
-        ScaffoldMessenger.of(context).showSnackBar(
+        scaffoldMessenger.showSnackBar(
           SnackBar(
             content: const Text('Producto creado exitosamente'),
             backgroundColor: Colors.green.shade400,
@@ -98,11 +140,13 @@ class _NewProductFormState extends State<NewProductForm> {
           ),
         );
 
-        Navigator.of(context).pop();
+        if (navigator.canPop()) {
+          navigator.pop(true); // <--- DEVOLVER true AQUÍ
+        }
 
       } catch (e) {
         print('Error al crear producto: $e');
-        ScaffoldMessenger.of(context).showSnackBar(
+        scaffoldMessenger.showSnackBar(
           SnackBar(
             content: Text('Error: $e'),
             backgroundColor: Colors.red.shade400,
@@ -110,6 +154,11 @@ class _NewProductFormState extends State<NewProductForm> {
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           ),
         );
+        // Opcionalmente, podrías hacer pop(false) aquí si quieres distinguir
+        // entre un cierre por cancelación y un cierre por error.
+        // if (navigator.canPop()) {
+        //   navigator.pop(false);
+        // }
       }
     }
   }
@@ -257,40 +306,65 @@ class _NewProductFormState extends State<NewProductForm> {
                   const SizedBox(height: 16),
 
                   // Campos del formulario en filas de 2
-                  Row(
-                    children: [
-                      Expanded(child: _buildTextField(_skuController, 'SKU', TextInputType.text, Icons.qr_code_outlined)),
-                      const SizedBox(width: 12),
-                      Expanded(child: _buildTextField(_nombreController, 'Nombre', TextInputType.text, Icons.label_outline)),
-                    ],
+                  // Campos del formulario en filas de 2
+                  _buildTextField(_skuController, 'SKU', TextInputType.text, Icons.qr_code_outlined),
+                  const SizedBox(height: 16),
+
+                  _buildTextField(_nombreController, 'Nombre', TextInputType.text, Icons.label_outline),
+                  const SizedBox(height: 16),
+
+                  DropdownButtonFormField<Department>(
+                    value: _selectedDepartment,
+                    decoration: InputDecoration(
+                      labelText: 'Departamento',
+                      labelStyle: TextStyle(color: Colors.grey[600]),
+                      prefixIcon: Icon(Icons.store_mall_directory_outlined, color: Colors.grey[600]),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.grey.shade300),
+                      ),
+                      filled: true,
+                      fillColor: Colors.grey.shade50,
+                    ),
+                    items: _departments.map((dept) {
+                      return DropdownMenuItem(
+                        value: dept,
+                        child: Text(dept.name),
+                      );
+                    }).toList(),
+                    onChanged: (dept) {
+                      setState(() {
+                        _selectedDepartment = dept;
+                      });
+                    },
+                    validator: (value) => value == null ? 'Selecciona un departamento' : null,
                   ),
                   const SizedBox(height: 16),
 
-                  Row(
-                    children: [
-                      Expanded(child: _buildTextField(_marcaController, 'Marca', TextInputType.text, Icons.business_outlined)),
-                      const SizedBox(width: 12),
-                      Expanded(child: _buildTextField(_tamanioController, 'Tamaño', TextInputType.text, Icons.straighten_outlined)),
-                    ],
-                  ),
+                  _buildTextField(_precioCostoController, 'Precio Costo', TextInputType.number, Icons.price_check_outlined),
                   const SizedBox(height: 16),
 
-                  Row(
-                    children: [
-                      Expanded(child: _buildTextField(_gradosController, 'Grados', TextInputType.number, Icons.local_bar_outlined)),
-                      const SizedBox(width: 12),
-                      Expanded(child: _buildTextField(_stockController, 'Stock', TextInputType.number, Icons.inventory_2_outlined)),
-                    ],
-                  ),
+                  _buildTextField(_precioVentaController, 'Precio Venta', TextInputType.number, Icons.attach_money_outlined),
                   const SizedBox(height: 16),
 
-                  Row(
-                    children: [
-                      Expanded(child: _buildTextField(_precioNormalController, 'Precio Normal', TextInputType.number, Icons.attach_money_outlined)),
-                      const SizedBox(width: 12),
-                      Expanded(child: _buildTextField(_precioMayoreoController, 'Precio Mayoreo', TextInputType.number, Icons.money_off_outlined)),
-                    ],
-                  ),
+                  _buildTextField(_precioMayoreoController, 'Precio Mayoreo', TextInputType.number, Icons.attach_money_outlined),
+                  const SizedBox(height: 16),
+
+                  _buildTextField(_precioUnidadVentaController, 'Precio Unidad Venta', TextInputType.number, Icons.money_outlined),
+                  const SizedBox(height: 16),
+
+                  _buildTextField(_unidadesPorPresentacionController, 'Unidades por presentacion', TextInputType.number, Icons.money_outlined),
+                  const SizedBox(height: 16),
+
+                  _buildTextField(_stockController, 'Stock', TextInputType.number, Icons.inventory_2_outlined),
+                  const SizedBox(height: 16),
+
+                  _buildTextField(_stockMinimoController, 'Stock Mínimo', TextInputType.number, Icons.remove_shopping_cart_outlined),
+                  const SizedBox(height: 16),
+
+                  _buildTextField(_minimoMayoreoController, 'Mínimo Mayoreo', TextInputType.number, Icons.stacked_line_chart_outlined),
+                  const SizedBox(height: 32),
+
                   const SizedBox(height: 32),
 
                   // Botones

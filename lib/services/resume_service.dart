@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:pos_app/models/cortes/corte.dart';
 import 'package:pos_app/models/resume/resume_dashboard.dart';
 import 'package:pos_app/models/resume/resume_ventas.dart';
 
@@ -27,6 +28,23 @@ class ResumeService {
 
     if (response.statusCode == 200) {
       return ResumeVentas.fromJson(jsonDecode(response.body));
+    } else {
+      throw Exception('Error fetching sales for date: ${response.statusCode}');
+    }
+  }
+
+  Future<Corte> fetchCorteByDay(DateTime date) async {
+    final baseUrl = await getApiBaseUrl();
+    final String formattedDate = DateFormat('yyyy-MM-dd').format(date);
+
+    final response = await _client.get(
+      Uri.parse('$baseUrl/api/resume/corte/day')
+          .replace(queryParameters: {'date': formattedDate}),
+      headers: {'Content-Type': 'application/json'},
+    );
+
+    if (response.statusCode == 200) {
+      return Corte.fromJson(jsonDecode(response.body));
     } else {
       throw Exception('Error fetching sales for date: ${response.statusCode}');
     }
