@@ -175,69 +175,182 @@ class _ProductsScreenState extends State<ProductsScreen> {
             // SECCIÓN PARA MOSTRAR EL COSTO DEL INVENTARIO
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Card(
-                elevation: 2,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+              child: Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Colors.grey.shade100, width: 1),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.08),
+                      blurRadius: 16,
+                      offset: const Offset(0, 4),
+                    ),
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.03),
+                      blurRadius: 4,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
                 ),
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        'Costo del Inventario:',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.black87,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Título con icono
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF9C27B0).withOpacity(0.1), // Púrpura para inventario
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: const Icon(
+                            Icons.inventory_2,
+                            size: 20,
+                            color: Color(0xFF9C27B0),
+                          ),
                         ),
-                      ),
-                      if (_isLoading && _totalInventoryCost == null && _searchQuery.isEmpty)
-                        const SizedBox(
+                        const SizedBox(width: 12),
+                        const Expanded(
+                          child: Text(
+                            'Costo del Inventario',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.grey,
+                              letterSpacing: 0.3,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Contenido principal con estados
+                    if (_isLoading && _totalInventoryCost == null && _searchQuery.isEmpty)
+                      const Row(
+                        children: [
+                          SizedBox(
                             height: 20,
                             width: 20,
-                            child: CircularProgressIndicator(strokeWidth: 3))
-                      else if (_inventoryCostError != null)
-                        Text(
-                          _inventoryCostError!,
-                          style: const TextStyle(
+                            child: CircularProgressIndicator(
+                              strokeWidth: 3,
+                              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF9C27B0)),
+                            ),
+                          ),
+                          SizedBox(width: 12),
+                          Text(
+                            'Cargando...',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ],
+                      )
+                    else if (_inventoryCostError != null)
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            _inventoryCostError!,
+                            style: const TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
-                              color: Colors.red),
-                        )
-                      else if (_totalInventoryCost != null)
-                          Text(
-                            _currencyFormat.format(_totalInventoryCost), // Formatea como moneda
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: Theme.of(context).primaryColorDark, // O un color que te guste
+                              color: Colors.red,
                             ),
-                          )
-                        else if (!_isLoading && _searchQuery.isEmpty) // Si no está cargando y no hay costo (ej. error no manejado arriba)
-                            const Text(
-                              'No disponible',
-                              style: TextStyle(
+                          ),
+                          const SizedBox(height: 4),
+                          Container(
+                            height: 3,
+                            width: 40,
+                            decoration: BoxDecoration(
+                              color: Colors.red.withOpacity(0.3),
+                              borderRadius: BorderRadius.circular(2),
+                            ),
+                          ),
+                        ],
+                      )
+                    else if (_totalInventoryCost != null)
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              _currencyFormat.format(_totalInventoryCost),
+                              style: const TextStyle(
+                                fontSize: 26,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF8D4E2A),
+                                letterSpacing: -0.5,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Container(
+                              height: 3,
+                              width: 40,
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(
+                                  colors: [Color(0xFF9C27B0), Color(0xFF9C27B0)],
+                                ),
+                                borderRadius: BorderRadius.circular(2),
+                              ),
+                            ),
+                          ],
+                        )
+                      else if (!_isLoading && _searchQuery.isEmpty)
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'No disponible',
+                                style: TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
-                                  color: Colors.grey),
-                            )
-                          else if (_searchQuery.isNotEmpty && _totalInventoryCost != null) // Muestra el costo si ya estaba cargado durante una búsqueda
-                              Text(
-                                _currencyFormat.format(_totalInventoryCost),
-                                style: TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                  color: Theme.of(context).primaryColorDark,
+                                  color: Colors.grey,
                                 ),
-                              )
-                            else // Durante la búsqueda y si el costo no estaba cargado, no muestra nada o un placeholder
-                              const SizedBox.shrink(),
-
-
-                    ],
-                  ),
+                              ),
+                              const SizedBox(height: 4),
+                              Container(
+                                height: 3,
+                                width: 40,
+                                decoration: BoxDecoration(
+                                  color: Colors.grey.withOpacity(0.3),
+                                  borderRadius: BorderRadius.circular(2),
+                                ),
+                              ),
+                            ],
+                          )
+                        else if (_searchQuery.isNotEmpty && _totalInventoryCost != null)
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  _currencyFormat.format(_totalInventoryCost),
+                                  style: const TextStyle(
+                                    fontSize: 26,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFF8D4E2A),
+                                    letterSpacing: -0.5,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Container(
+                                  height: 3,
+                                  width: 40,
+                                  decoration: BoxDecoration(
+                                    gradient: const LinearGradient(
+                                      colors: [Color(0xFF9C27B0), Color(0xFF9C27B0)],
+                                    ),
+                                    borderRadius: BorderRadius.circular(2),
+                                  ),
+                                ),
+                              ],
+                            )
+                          else
+                            const SizedBox.shrink(),
+                  ],
                 ),
               ),
             ),

@@ -30,7 +30,8 @@ class ProductInventoryEntry {
     return {
       'id': id,
       'cajasCompradas': cajasCompradas,
-      'precioPorCaja': precioPorCaja,// Estándar para fechas en JSON
+      'precioPorCaja': precioPorCaja,
+      // Estándar para fechas en JSON
     };
   }
 

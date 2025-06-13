@@ -72,13 +72,18 @@ class _TicketScreenState extends State<TicketScreen> {
 
   Future<void> _saveTicketSettings() async {
     if (!mounted) return;
+
+    // Guardar el contexto del ScaffoldMessenger ANTES de operaciones async
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+    final navigator = Navigator.of(context);
+
     setState(() {
-      _isLoading = true; // Podrías tener un _isSaving separado
+      _isLoading = true;
       _errorMessage = null;
       _successMessage = null;
     });
 
-    final settingsToUpdate = TicketSettings(// Importante: usa el ID obtenido del fetch
+    final settingsToUpdate = TicketSettings(
       nombreNegocio: _nombreNegocioController.text,
       direccion: _direccionController.text,
       telefono: _telefonoController.text,
@@ -90,23 +95,37 @@ class _TicketScreenState extends State<TicketScreen> {
     try {
       final resultMessage = await _ticketSettingsService.update(settingsToUpdate);
       if (!mounted) return;
+
       setState(() {
         _isLoading = false;
-        _successMessage = resultMessage;
       });
-      // Opcional: Cerrar el diálogo después de un tiempo o con un botón OK
-      Future.delayed(const Duration(seconds: 2), () {
-        if (mounted && Navigator.of(context).canPop()) {
-          // Navigator.of(context).pop(true); // Devuelve true si la pantalla anterior necesita saber que hubo cambios
-        }
-      });
+
+      scaffoldMessenger.showSnackBar(
+        SnackBar(
+          content: Text(resultMessage),
+          backgroundColor: Colors.green.shade400,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        ),
+      );
+
+      if (navigator.canPop()) {
+        navigator.pop(true);
+      }
     } catch (e) {
       if (!mounted) return;
       setState(() {
         _isLoading = false;
-        _errorMessage = "Error al guardar configuración: ${e.toString()}";
       });
-      debugPrint("Error updating ticket settings: $e");
+
+      scaffoldMessenger.showSnackBar(
+        SnackBar(
+          content: Text("Error al guardar configuración: ${e.toString()}"),
+          backgroundColor: Colors.red.shade400,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        ),
+      );
     }
   }
 
@@ -123,106 +142,190 @@ class _TicketScreenState extends State<TicketScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.black.withOpacity(0.5), // Fondo semi-transparente para el efecto de diálogo
-      child: Center(
-        child: Container(
-          width: MediaQuery.of(context).size.width * 0.9, // Ancho responsivo
-          constraints: const BoxConstraints(maxWidth: 500), // Ancho máximo
-          margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
-          padding: const EdgeInsets.all(20.0),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.1),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              )
+    return Dialog(
+      insetPadding: const EdgeInsets.all(16),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 20,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: _isLoading && _nombreNegocioController.text.isEmpty
+            ? Container(
+          padding: const EdgeInsets.all(40),
+          child: const Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(
+                color: Color(0xFFFFB74D),
+              ),
+              SizedBox(height: 16),
+              Text(
+                "Cargando configuración...",
+                style: TextStyle(
+                  color: Color(0xFF8D4E2A),
+                  fontSize: 16,
+                ),
+              ),
             ],
           ),
-          child: _isLoading && _nombreNegocioController.text.isEmpty // Muestra cargando solo al inicio
-              ? const Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  CircularProgressIndicator(),
-                  SizedBox(height: 16),
-                  Text("Cargando configuración..."),
-                ],
-              ))
-              : SingleChildScrollView(
+        )
+            : SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
             child: Column(
               mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch, // Para que el botón se estire
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      'Configuración de Ticket',
-                      style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF333333)
-                      ),
+                // Header con icono
+                Container(
+                  width: 60,
+                  height: 60,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        const Color(0xFFFFB74D).withOpacity(0.8),
+                        const Color(0xFFFF8A65).withOpacity(0.8),
+                      ],
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.close, color: Colors.grey),
-                      onPressed: () => Navigator.of(context).pop(),
-                    )
-                  ],
+                    borderRadius: BorderRadius.circular(30),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFFFFB74D).withOpacity(0.3),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: const Icon(
+                    Icons.receipt_long_outlined,
+                    color: Colors.white,
+                    size: 28,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'Configuración de Ticket',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF8D4E2A),
+                  ),
                 ),
                 const SizedBox(height: 24),
-                _buildField(_nombreNegocioController, 'Nombre del negocio', Icons.storefront_outlined),
-                const SizedBox(height: 16),
-                _buildField(_direccionController, 'Dirección', Icons.location_on_outlined),
-                const SizedBox(height: 16),
-                _buildField(_telefonoController, 'Teléfono', Icons.phone_outlined, keyboardType: TextInputType.phone),
-                const SizedBox(height: 16),
-                _buildField(_rfcController, 'RFC', Icons.badge_outlined),
-                const SizedBox(height: 16),
-                _buildField(_mensajeFinalController, 'Mensaje final (opcional)', Icons.message_outlined, maxLines: 3),
-                const SizedBox(height: 16),
-                _buildField(_urlController, 'URL (opcional)', Icons.link_outlined, keyboardType: TextInputType.url),
-                const SizedBox(height: 24),
 
-                if (_errorMessage != null)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 12.0),
-                    child: Text(
-                      _errorMessage!,
-                      style: const TextStyle(color: Colors.red, fontSize: 14),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                if (_successMessage != null)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 12.0),
-                    child: Text(
-                      _successMessage!,
-                      style: const TextStyle(color: Colors.green, fontSize: 14),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
+                // Campos del formulario
+                _buildTextField(
+                  _nombreNegocioController,
+                  'Nombre del negocio',
+                  TextInputType.text,
+                  Icons.storefront_outlined,
+                ),
+                const SizedBox(height: 16),
 
-                ElevatedButton.icon(
-                  icon: _isLoading ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)) : const Icon(Icons.save_outlined),
-                  label: Text(
-                    _isLoading ? 'Guardando...' : 'Guardar Cambios',
-                    style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
-                  ),
-                  onPressed: _isLoading ? null : _saveTicketSettings, // Deshabilita si está cargando/guardando
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF6C5CE7), // Un color morado bonito
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
+                _buildTextField(
+                  _direccionController,
+                  'Dirección',
+                  TextInputType.text,
+                  Icons.location_on_outlined,
+                ),
+                const SizedBox(height: 16),
+
+                _buildTextField(
+                  _telefonoController,
+                  'Teléfono',
+                  TextInputType.phone,
+                  Icons.phone_outlined,
+                ),
+                const SizedBox(height: 16),
+
+                _buildTextField(
+                  _rfcController,
+                  'RFC',
+                  TextInputType.text,
+                  Icons.badge_outlined,
+                ),
+                const SizedBox(height: 16),
+
+                _buildTextField(
+                  _mensajeFinalController,
+                  'Mensaje final (opcional)',
+                  TextInputType.multiline,
+                  Icons.message_outlined,
+                  maxLines: 3,
+                ),
+                const SizedBox(height: 16),
+
+                _buildTextField(
+                  _urlController,
+                  'URL (opcional)',
+                  TextInputType.url,
+                  Icons.link_outlined,
+                ),
+                const SizedBox(height: 32),
+
+                // Botones
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    // Botón Cancelar
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      style: TextButton.styleFrom(
+                        foregroundColor: Colors.grey[600],
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 12,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          side: BorderSide(color: Colors.grey.shade300),
+                        ),
+                      ),
+                      child: const Text(
+                        'Cancelar',
+                        style: TextStyle(fontWeight: FontWeight.w500),
+                      ),
                     ),
-                    elevation: 2,
-                  ),
+
+                    // Botón Guardar
+                    ElevatedButton(
+                      onPressed: _isLoading ? null : _saveTicketSettings,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFFFB74D),
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 32,
+                          vertical: 12,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: _isLoading
+                          ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                          : const Text(
+                        'Guardar',
+                        style: TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -232,37 +335,46 @@ class _TicketScreenState extends State<TicketScreen> {
     );
   }
 
-  Widget _buildField(
+  Widget _buildTextField(
       TextEditingController controller,
       String label,
-      IconData? icon, {
-        TextInputType keyboardType = TextInputType.text,
+      TextInputType type,
+      IconData icon, {
         int maxLines = 1,
       }) {
-    return TextField(
+    return TextFormField(
       controller: controller,
-      keyboardType: keyboardType,
+      keyboardType: type,
       maxLines: maxLines,
       decoration: InputDecoration(
         labelText: label,
-        prefixIcon: icon != null ? Icon(icon, color: Colors.grey[600]) : null,
+        labelStyle: TextStyle(color: Colors.grey[600]),
+        prefixIcon: Icon(
+          icon,
+          color: Colors.grey[600],
+        ),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(color: Colors.grey.shade300),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(color: Colors.grey.shade300),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(color: Theme.of(context).primaryColor, width: 2),
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(
+            color: Color(0xFFFFB74D),
+            width: 2,
+          ),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.red.shade400),
         ),
         filled: true,
-        fillColor: Colors.white, // O un color muy claro como Colors.grey.shade50
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        fillColor: Colors.grey.shade50,
       ),
-      style: const TextStyle(color: Colors.black87),
     );
   }
 }

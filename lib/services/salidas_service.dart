@@ -55,7 +55,7 @@ class SalidasService {
     final String formattedDate = DateFormat('yyyy-MM-dd').format(date);
 
     final response = await _client.get(
-      Uri.parse('$baseUrl/api/sales/by-date')
+      Uri.parse('$baseUrl/api/salidas/by-date')
           .replace(queryParameters: {'date': formattedDate}),
       headers: {'Content-Type': 'application/json'},
     );

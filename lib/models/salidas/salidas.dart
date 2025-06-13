@@ -25,7 +25,7 @@ class Salidas {
       'id': id,
       'description': description,
       'amount': amount,
-      'date': date.toString(),
+      'date': date.toIso8601String(),
     };
   }
 

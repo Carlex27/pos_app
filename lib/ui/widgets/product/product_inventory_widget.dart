@@ -22,10 +22,7 @@ class ProductInventoryWidget extends StatefulWidget {
 
 class _ProductInventoryWidgetState extends State<ProductInventoryWidget> {
   Future<List<ProductInventoryEntry>>? _entriesFuture;
-  // Usar una clave para el FutureBuilder puede ayudar a forzar su reconstrucción
-  // cuando _entriesFuture es reemplazado por una nueva instancia de Future.
   Key _futureBuilderKey = UniqueKey();
-
 
   @override
   void initState() {
@@ -35,8 +32,6 @@ class _ProductInventoryWidgetState extends State<ProductInventoryWidget> {
 
   void _loadInventoryEntries() {
     setState(() {
-      // Asignar una nueva UniqueKey fuerza al FutureBuilder a reconstruirse
-      // con el nuevo Future, lo cual es útil después de una actualización.
       _futureBuilderKey = UniqueKey();
       _entriesFuture = widget.productService.fetchAllEntriesByProduct(widget.productId);
     });
@@ -54,18 +49,95 @@ class _ProductInventoryWidgetState extends State<ProductInventoryWidget> {
       barrierDismissible: false,
       builder: (BuildContext dialogContext) {
         return AlertDialog(
-          title: const Text('Editar Entrada'),
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      const Color(0xFFFFB74D).withOpacity(0.8),
+                      const Color(0xFFFF8A65).withOpacity(0.8),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFFFFB74D).withOpacity(0.3),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: const Icon(
+                  Icons.edit_outlined,
+                  color: Colors.white,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
+              const Text(
+                'Editar Entrada',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF8D4E2A),
+                ),
+              ),
+            ],
+          ),
           content: SingleChildScrollView(
             child: Form(
               key: formKey,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
+                  const SizedBox(height: 8),
                   TextFormField(
                     controller: cantidadController,
-                    decoration: const InputDecoration(
+                    style: const TextStyle(fontSize: 16),
+                    decoration: InputDecoration(
                       labelText: 'Cantidad (cajas)',
-                      icon: Icon(Icons.shopping_cart_checkout_outlined), // Icono actualizado
+                      labelStyle: TextStyle(color: Colors.grey.shade600),
+                      prefixIcon: Container(
+                        margin: const EdgeInsets.all(8),
+                        width: 24,
+                        height: 24,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFB74D).withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Icon(
+                          Icons.inventory_2_outlined,
+                          color: const Color(0xFFFFB74D),
+                          size: 18,
+                        ),
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.grey.shade300),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.grey.shade300),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(
+                          color: Color(0xFFFFB74D),
+                          width: 2,
+                        ),
+                      ),
+                      filled: true,
+                      fillColor: Colors.grey.shade50,
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                     ),
                     keyboardType: TextInputType.number,
                     inputFormatters: [FilteringTextInputFormatter.digitsOnly],
@@ -83,10 +155,43 @@ class _ProductInventoryWidgetState extends State<ProductInventoryWidget> {
                   const SizedBox(height: 16),
                   TextFormField(
                     controller: precioCostoController,
-                    decoration: const InputDecoration(
+                    style: const TextStyle(fontSize: 16),
+                    decoration: InputDecoration(
                       labelText: 'Precio Costo por Caja',
+                      labelStyle: TextStyle(color: Colors.grey.shade600),
                       prefixText: '\$ ',
-                      icon: Icon(Icons.attach_money_outlined), // Icono actualizado
+                      prefixIcon: Container(
+                        margin: const EdgeInsets.all(8),
+                        width: 24,
+                        height: 24,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFB74D).withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Icon(
+                          Icons.attach_money_outlined,
+                          color: const Color(0xFFFFB74D),
+                          size: 18,
+                        ),
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.grey.shade300),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.grey.shade300),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(
+                          color: Color(0xFFFFB74D),
+                          width: 2,
+                        ),
+                      ),
+                      filled: true,
+                      fillColor: Colors.grey.shade50,
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                     ),
                     keyboardType: const TextInputType.numberWithOptions(decimal: true),
                     inputFormatters: [
@@ -109,16 +214,32 @@ class _ProductInventoryWidgetState extends State<ProductInventoryWidget> {
           ),
           actions: <Widget>[
             TextButton(
-              child: const Text('Cancelar'),
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.grey.shade600,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              ),
+              child: const Text(
+                'Cancelar',
+                style: TextStyle(fontWeight: FontWeight.w500),
+              ),
               onPressed: () => Navigator.of(dialogContext).pop(),
             ),
             ElevatedButton(
-              child: const Text('Guardar'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFFFB74D),
+                foregroundColor: Colors.white,
+                elevation: 0,
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: const Text(
+                'Guardar',
+                style: TextStyle(fontWeight: FontWeight.w600),
+              ),
               onPressed: () {
                 if (formKey.currentState!.validate()) {
-                  // Crea una nueva instancia con los datos actualizados.
-                  // `copyWith` debería mantener los campos no modificados como
-                  // `id`, `productId`, y `entryDate` de la 'entry' original.
                   final updatedData = entry.copyWith(
                     cajasCompradas: int.parse(cantidadController.text),
                     precioPorCaja: double.parse(precioCostoController.text),
@@ -133,39 +254,53 @@ class _ProductInventoryWidgetState extends State<ProductInventoryWidget> {
     );
 
     if (updatedEntryData != null) {
-      // Mostrar un indicador de carga mientras se actualiza
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Row(children: [CircularProgressIndicator(), SizedBox(width: 15), Text('Actualizando entrada...')]),
-          duration: Duration(seconds: 5), // Duración más larga para que el usuario vea que se está procesando
+        SnackBar(
+          content: const Row(
+            children: [
+              SizedBox(
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                ),
+              ),
+              SizedBox(width: 12),
+              Text('Actualizando entrada...'),
+            ],
+          ),
+          backgroundColor: const Color(0xFFFFB74D),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          duration: const Duration(seconds: 5),
         ),
       );
 
       try {
-        // Llama al método del servicio para actualizar.
-        // Asegúrate de que el nombre del método (updateEntry o update) sea el correcto.
         final successMessage = await widget.productService.updateEntry(updatedEntryData);
 
-        // Quitar el SnackBar de "Actualizando..." y mostrar el de éxito
         ScaffoldMessenger.of(context).hideCurrentSnackBar();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(successMessage),
-            backgroundColor: Colors.green,
+            backgroundColor: Colors.green.shade400,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           ),
         );
-        _loadInventoryEntries(); // Recarga la lista para reflejar los cambios
+        _loadInventoryEntries();
       } catch (e) {
-        // Quitar el SnackBar de "Actualizando..." y mostrar el de error
         ScaffoldMessenger.of(context).hideCurrentSnackBar();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error al actualizar: ${e.toString()}'),
-            backgroundColor: Colors.red,
+            backgroundColor: Colors.red.shade400,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
             duration: const Duration(seconds: 4),
           ),
         );
-        // Opcional: podrías querer imprimir el error completo en la consola de depuración
         print("Error completo al actualizar entrada: $e");
       }
     }
@@ -176,89 +311,220 @@ class _ProductInventoryWidgetState extends State<ProductInventoryWidget> {
     final currencyFormatter = NumberFormat.currency(locale: 'es_MX', symbol: '\$');
     final dateFormatter = DateFormat('dd/MM/yyyy HH:mm', 'es_MX');
 
-    return Material(
-      color: Theme.of(context).canvasColor,
-      borderRadius: const BorderRadius.only(
-        topLeft: Radius.circular(20),
-        topRight: Radius.circular(20),
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.grey[50],
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(20),
+          topRight: Radius.circular(20),
+        ),
       ),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Center(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 12.0),
-                child: Container(
-                  width: 48,
-                  height: 5,
-                  decoration: BoxDecoration(
-                    color: Colors.grey[400],
-                    borderRadius: BorderRadius.circular(10),
-                  ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Handle del modal
+          Center(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 12.0),
+              child: Container(
+                width: 48,
+                height: 5,
+                decoration: BoxDecoration(
+                  color: Colors.grey[400],
+                  borderRadius: BorderRadius.circular(10),
                 ),
               ),
             ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Text(
-                    'Entradas de Inventario',
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.close),
-                  onPressed: () => Navigator.of(context).pop(),
+          ),
+
+          // Header elegante
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.fromLTRB(24, 16, 16, 24),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 20,
+                  offset: const Offset(0, 8),
                 ),
               ],
             ),
-            if (widget.productId != 0) // Asumiendo 0 como un ID no válido o no especificado
-              Padding(
-                padding: const EdgeInsets.only(bottom: 8.0),
-                child: Text(
-                  'Producto ID: ${widget.productId}',
-                  style: Theme.of(context).textTheme.bodySmall,
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    // Icono con gradiente
+                    Container(
+                      width: 50,
+                      height: 50,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            const Color(0xFFFFB74D).withOpacity(0.8),
+                            const Color(0xFFFF8A65).withOpacity(0.8),
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(25),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFFFFB74D).withOpacity(0.3),
+                            blurRadius: 12,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: const Icon(
+                        Icons.inventory_2_outlined,
+                        color: Colors.white,
+                        size: 24,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Entradas de Inventario',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF8D4E2A),
+                            ),
+                          ),
+                          if (widget.productId != 0)
+                            Text(
+                              'Producto ID: ${widget.productId}',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey.shade600,
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      width: 32,
+                      height: 32,
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade100,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: Colors.grey.shade300),
+                      ),
+                      child: IconButton(
+                        icon: Icon(
+                          Icons.close,
+                          color: Colors.grey.shade600,
+                          size: 16,
+                        ),
+                        onPressed: () => Navigator.of(context).pop(),
+                        padding: EdgeInsets.zero,
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-            const Divider(thickness: 1, height: 16),
-            Expanded(
+              ],
+            ),
+          ),
+
+          // Contenido principal
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
               child: FutureBuilder<List<ProductInventoryEntry>>(
-                key: _futureBuilderKey, // Importante para la reconstrucción
+                key: _futureBuilderKey,
                 future: _entriesFuture,
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator());
+                    return Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          CircularProgressIndicator(
+                            valueColor: AlwaysStoppedAnimation<Color>(const Color(0xFFFFB74D)),
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'Cargando entradas...',
+                            style: TextStyle(
+                              color: Colors.grey.shade600,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
                   } else if (snapshot.hasError) {
                     return Center(
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
+                      child: Container(
+                        padding: const EdgeInsets.all(24),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 20,
+                              offset: const Offset(0, 8),
+                            ),
+                          ],
+                        ),
                         child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.error_outline, color: Colors.red, size: 48),
+                            Container(
+                              width: 60,
+                              height: 60,
+                              decoration: BoxDecoration(
+                                color: Colors.red.shade50,
+                                borderRadius: BorderRadius.circular(30),
+                              ),
+                              child: Icon(
+                                Icons.error_outline,
+                                color: Colors.red.shade400,
+                                size: 32,
+                              ),
+                            ),
                             const SizedBox(height: 16),
-                            Text(
+                            const Text(
                               'Error al cargar entradas',
-                              style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xFF8D4E2A),
+                              ),
                               textAlign: TextAlign.center,
                             ),
                             const SizedBox(height: 8),
                             Text(
-                              snapshot.error.toString(), // Muestra el error
+                              snapshot.error.toString(),
                               textAlign: TextAlign.center,
-                              style: Theme.of(context).textTheme.bodySmall,
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey.shade600,
+                              ),
                             ),
                             const SizedBox(height: 20),
                             ElevatedButton.icon(
-                              icon: const Icon(Icons.refresh),
-                              label: const Text('Reintentar'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFFFFB74D),
+                                foregroundColor: Colors.white,
+                                elevation: 0,
+                                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                              ),
+                              icon: const Icon(Icons.refresh, size: 18),
+                              label: const Text(
+                                'Reintentar',
+                                style: TextStyle(fontWeight: FontWeight.w600),
+                              ),
                               onPressed: _loadInventoryEntries,
                             )
                           ],
@@ -267,16 +533,44 @@ class _ProductInventoryWidgetState extends State<ProductInventoryWidget> {
                     );
                   } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
                     return Center(
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
+                      child: Container(
+                        padding: const EdgeInsets.all(24),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 20,
+                              offset: const Offset(0, 8),
+                            ),
+                          ],
+                        ),
                         child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.inventory_2_outlined, size: 48, color: Colors.grey.shade500),
+                            Icon(
+                              Icons.inventory_2_outlined,
+                              size: 64,
+                              color: Colors.grey.shade300,
+                            ),
                             const SizedBox(height: 16),
                             Text(
                               'Sin Entradas Registradas',
-                              style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.grey.shade500,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'No hay entradas de inventario para este producto',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey.shade400,
+                              ),
+                              textAlign: TextAlign.center,
                             ),
                           ],
                         ),
@@ -285,21 +579,30 @@ class _ProductInventoryWidgetState extends State<ProductInventoryWidget> {
                   }
 
                   final entries = snapshot.data!;
-                  return ListView.separated(
+                  return ListView.builder(
                     itemCount: entries.length,
                     itemBuilder: (context, index) {
                       final entry = entries[index];
-                      return Card(
-                        elevation: 2.0,
-                        margin: const EdgeInsets.symmetric(vertical: 6.0),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 16),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 20,
+                              offset: const Offset(0, 8),
+                            ),
+                          ],
+                        ),
                         child: Padding(
-                          padding: const EdgeInsets.fromLTRB(16, 12, 8, 12), // Ajuste de padding derecho para el botón
+                          padding: const EdgeInsets.all(20),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
+                              // Header con cantidad y botón editar
                               Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Expanded(
                                     child: Column(
@@ -307,44 +610,120 @@ class _ProductInventoryWidgetState extends State<ProductInventoryWidget> {
                                       children: [
                                         Text(
                                           'Cantidad: ${entry.cajasCompradas}',
-                                          style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                                          style: const TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.w600,
+                                            color: Color(0xFF8D4E2A),
+                                          ),
                                         ),
-                                        const SizedBox(height: 6),
+                                        const SizedBox(height: 4),
                                         Text(
-                                          'Precio Costo: ${currencyFormatter.format(entry.precioPorCaja)} /caja',
-                                          style: Theme.of(context).textTheme.bodyLarge,
+                                          'cajas agregadas',
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            color: Colors.grey.shade600,
+                                          ),
                                         ),
                                       ],
                                     ),
                                   ),
-                                  IconButton(
-                                    icon: Icon(Icons.edit_outlined, color: Theme.of(context).colorScheme.secondary), // Icono actualizado
-                                    tooltip: 'Editar Entrada',
-                                    padding: EdgeInsets.zero, // Ajustar padding si es necesario
-                                    constraints: const BoxConstraints(), // Para quitar padding extra
-                                    onPressed: () {
-                                      _showEditEntryDialog(entry);
-                                    },
+                                  Container(
+                                    width: 36,
+                                    height: 36,
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFFFB74D).withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(18),
+                                      border: Border.all(
+                                        color: const Color(0xFFFFB74D).withOpacity(0.3),
+                                      ),
+                                    ),
+                                    child: IconButton(
+                                      icon: const Icon(
+                                        Icons.edit_outlined,
+                                        color: Color(0xFFFFB74D),
+                                        size: 16,
+                                      ),
+                                      onPressed: () => _showEditEntryDialog(entry),
+                                      padding: EdgeInsets.zero,
+                                    ),
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: 6),
-                              Text(
-                                'Fecha: ${dateFormatter.format(entry.entryDate)}',
-                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey.shade700),
+
+                              const SizedBox(height: 16),
+
+                              // Información del precio
+                              Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                decoration: BoxDecoration(
+                                  color: Colors.grey.shade50,
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(color: Colors.grey.shade200),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Icon(
+                                      Icons.attach_money_outlined,
+                                      size: 16,
+                                      color: Colors.grey.shade600,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      'Precio Costo: ${currencyFormatter.format(entry.precioPorCaja)} /caja',
+                                      style: TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w500,
+                                        color: Colors.grey.shade700,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+
+                              const SizedBox(height: 12),
+
+                              // Fecha
+                              Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFFFB74D).withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(
+                                    color: const Color(0xFFFFB74D).withOpacity(0.3),
+                                  ),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Icon(
+                                      Icons.schedule_outlined,
+                                      size: 16,
+                                      color: const Color(0xFFFFB74D),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      'Fecha: ${dateFormatter.format(entry.entryDate)}',
+                                      style: const TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w500,
+                                        color: Color(0xFF8D4E2A),
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ],
                           ),
                         ),
                       );
                     },
-                    separatorBuilder: (context, index) => const SizedBox(height: 8),
                   );
                 },
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

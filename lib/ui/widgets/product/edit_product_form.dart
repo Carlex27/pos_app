@@ -449,7 +449,7 @@ class _EditProductFormState extends State<EditProductForm> {
                   _buildTextField(_stockMinimoController, 'Stock Mínimo', TextInputType.number, Icons.remove_shopping_cart_outlined),
                   const SizedBox(height: 16),
 
-                  _buildTextField(_minimoMayoreoController, 'Mínimo Mayoreo', TextInputType.text, Icons.stacked_line_chart_outlined),
+                  _buildTextField(_minimoMayoreoController, 'Mínimo Mayoreo', TextInputType.number, Icons.stacked_line_chart_outlined),
                   const SizedBox(height: 32),
 
                   const SizedBox(height: 16),
