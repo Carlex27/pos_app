@@ -93,7 +93,7 @@ class _CortesScreenState extends State<CortesScreen> {
 
     return Scaffold(
       backgroundColor: Colors.grey[50],
-      body: SafeArea(
+      body: Container(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
           child: Column(
@@ -537,6 +537,71 @@ class _CortesScreenState extends State<CortesScreen> {
           ),
         ),
       ),
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: 5, left: 16, right: 16), // Ajusta el padding según necesites
+        child: Row( // Cambiamos Column por Row
+          mainAxisAlignment: MainAxisAlignment.spaceBetween, // Distribuye el espacio entre los botones
+          children: [
+            ElevatedButton.icon(
+              onPressed: () {
+                try {
+                  _service.pdfCorte(selectedDate);
+                  // Mostrar un mensaje o abrir el archivo si quieres
+                } catch (e) {
+                  print('Error al generar PDF: $e');
+                }
+
+              },
+              icon: const Icon(Icons.receipt_long, color: Colors.white, size: 18),
+              label: const Text(
+                'Ver PDF',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.teal.shade600,
+                elevation: 3,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+            ),
+            ElevatedButton.icon(
+              onPressed: () {
+                try {
+                  _service.printCorte(selectedDate);
+                  // Mostrar un mensaje o abrir el archivo si quieres
+                } catch (e) {
+                  print('Error al generar PDF: $e');
+                }
+
+              },
+              icon: const Icon(Icons.receipt_long, color: Colors.white, size: 18),
+              label: const Text(
+                'Imprimir pdf',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.orange.shade600,
+                elevation: 3,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+
+
     );
   }
 

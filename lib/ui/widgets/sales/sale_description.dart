@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:pos_app/services/tickets_service.dart';
+import 'package:provider/provider.dart';
 import '../../../models/sales/sale_response.dart';
 
 class SaleDescription extends StatelessWidget {
@@ -27,6 +29,40 @@ class SaleDescription extends StatelessWidget {
         backgroundColor: const Color(0xFF6C5CE7),
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
+        actions: [
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.more_vert, color: Colors.white),
+            onSelected: (String value) async {
+              if (value == 'pdf') {
+                try {
+                  final ticketService = Provider.of<TicketService>(context, listen: false);
+                  await ticketService.pdfSale(sale.id); // Usa el ID real de la venta
+                  // Mostrar un mensaje o abrir el archivo si quieres
+                } catch (e) {
+                  print('Error al generar PDF: $e');
+                }
+              } else if (value == 'ticket') {
+                // Aquí puedes usar el mismo método o uno distinto si tienes lógica diferente
+                try {
+                  final ticketService = Provider.of<TicketService>(context, listen: false);
+                  await ticketService.printSale(sale.id);
+                } catch (e) {
+                  print('Error al imprimir ticket: $e');
+                }
+              }
+            },
+            itemBuilder: (BuildContext context) => [
+              const PopupMenuItem<String>(
+                value: 'pdf',
+                child: Text('Ver PDF'),
+              ),
+              const PopupMenuItem<String>(
+                value: 'ticket',
+                child: Text('Imprimir ticket'),
+              ),
+            ],
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),

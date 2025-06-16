@@ -112,7 +112,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F0),
-      body: SafeArea(
+      body: Container(
         child: Column(
           children: [
             // Header con caja de búsqueda

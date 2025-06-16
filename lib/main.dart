@@ -5,6 +5,7 @@ import 'package:pos_app/services/department_service.dart';
 import 'package:pos_app/services/resume_service.dart';
 import 'package:pos_app/services/salidas_service.dart';
 import 'package:pos_app/services/ticketSettings_service.dart';
+import 'package:pos_app/services/tickets_service.dart';
 import 'package:pos_app/services/user_service.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -38,6 +39,7 @@ class PosApp extends StatelessWidget {
         Provider<ClientService>(create: (_) => ClientService()),
         Provider<TicketSettingsService>(create: (_) => TicketSettingsService()),
         Provider<SalidasService>(create: (_) => SalidasService()),
+        Provider<TicketService>(create: (_) => TicketService()),
       ],
       child: MaterialApp(
         title: 'POS Cervecería',

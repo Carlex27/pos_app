@@ -1,4 +1,3 @@
-import 'dart:ffi';
 
 class ClientAbonos{
   final int id;
