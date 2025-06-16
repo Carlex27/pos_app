@@ -93,7 +93,7 @@ class _CortesScreenState extends State<CortesScreen> {
 
     return Scaffold(
       backgroundColor: Colors.grey[50],
-      body: SafeArea(
+      body: Container(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
           child: Column(

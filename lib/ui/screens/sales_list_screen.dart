@@ -103,7 +103,7 @@ class _SalesScreenState extends State<SalesScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F0),
-      body: SafeArea(
+      body: Container(
         child: Column(
           children: [
             // Header
@@ -135,19 +135,6 @@ class _SalesScreenState extends State<SalesScreen> {
                     onTodaySelected: _onTodaySelected,
                     onDaySelected: _onDaySelected,
                     onMonthSelected: _onMonthSelected,
-                  ),
-                  const SizedBox(height: 16),
-                  FutureBuilder<ResumeVentas>(
-                    future: _futureResumen,
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const Center(child: CircularProgressIndicator());
-                      }
-                      if (snapshot.hasError || !snapshot.hasData) {
-                        return const SizedBox();
-                      }
-                      return ResumeVentasWd(data: snapshot.data!);
-                    },
                   ),
                 ],
               ),

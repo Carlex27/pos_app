@@ -12,7 +12,7 @@ class ResumeVentasWd extends StatelessWidget {
     final currencyFormat = NumberFormat.simpleCurrency(locale: 'es_MX');
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Row(
         children: [
           // Total Ventas
@@ -25,7 +25,7 @@ class ResumeVentasWd extends StatelessWidget {
               content: '${data.totalVentas}',
             ),
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 12),
           // Ingresos
           Expanded(
             child: _buildCard(
@@ -49,77 +49,73 @@ class ResumeVentasWd extends StatelessWidget {
     required String content,
   }) {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(color: Colors.grey.shade100, width: 1),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 16,
-            offset: const Offset(0, 4),
-          ),
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.03),
-            blurRadius: 4,
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 8,
             offset: const Offset(0, 2),
           ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
           // Icono con fondo circular
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(8),
+                padding: const EdgeInsets.all(6),
                 decoration: BoxDecoration(
                   color: iconBgColor,
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(
                   icon,
-                  size: 20,
+                  size: 16,
                   color: iconColor,
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 8),
               Expanded(
                 child: Text(
                   title,
                   style: TextStyle(
-                    fontSize: 14,
+                    fontSize: 12,
                     fontWeight: FontWeight.w600,
                     color: Colors.grey[700],
-                    letterSpacing: 0.3,
+                    letterSpacing: 0.2,
                   ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 8),
           // Contenido principal
           Text(
             content,
             style: const TextStyle(
-              fontSize: 26,
+              fontSize: 20,
               fontWeight: FontWeight.bold,
               color: Color(0xFF8D4E2A),
-              letterSpacing: -0.5,
+              letterSpacing: -0.3,
             ),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 2),
           // Línea decorativa
           Container(
-            height: 3,
-            width: 40,
+            height: 2,
+            width: 30,
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [iconColor, iconColor.withOpacity(0.3)],
               ),
-              borderRadius: BorderRadius.circular(2),
+              borderRadius: BorderRadius.circular(1),
             ),
           ),
         ],
