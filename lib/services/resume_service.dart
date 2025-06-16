@@ -7,6 +7,10 @@ import '../config.dart';
 import 'authenticated_client.dart';
 
 import 'package:intl/intl.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:open_file/open_file.dart';
+import 'dart:io';
+import 'dart:typed_data';
 
 /// Servicio para consumo de la API de Productos usando cliente autenticado
 class ResumeService {
@@ -30,6 +34,41 @@ class ResumeService {
       return ResumeVentas.fromJson(jsonDecode(response.body));
     } else {
       throw Exception('Error fetching sales for date: ${response.statusCode}');
+    }
+  }
+
+  Future<String> pdfCorte(DateTime date) async {
+    final baseUrl = await getApiBaseUrl();
+    final response = await _client.get(
+      Uri.parse('$baseUrl/api/resume/pdf/corte')
+          .replace(queryParameters: {'date': DateFormat('yyyy-MM-dd').format(date)}),
+      headers: {'Content-Type': 'application/json'},
+    );
+
+    if (response.statusCode == 200) {
+      final Uint8List bytes = response.bodyBytes;
+      final directory = await getApplicationDocumentsDirectory();
+      final filePath = '${directory.path}/ticket_saldos.pdf';
+      final file = File(filePath);
+      await file.writeAsBytes(bytes);
+      await OpenFile.open(filePath);
+      return 'PDF abierto desde: $filePath';
+
+    } else {
+      throw Exception('Error al obtener el ticket de saldos: ${response.statusCode}');
+    }
+  }
+  Future<String> printCorte(DateTime date) async {
+    final baseUrl = await getApiBaseUrl();
+    final response = await _client.get(
+      Uri.parse('$baseUrl/api/resume/print/corte')
+      .replace(queryParameters: {'date': DateFormat('yyyy-MM-dd').format(date)}),
+      headers: {'Content-Type': 'application/json'},
+    );
+    if (response.statusCode == 200) {
+      return "Ticket impreso correctamente";
+    } else {
+      throw Exception('Error fetching TicketSettings: ${response.statusCode}');
     }
   }
 

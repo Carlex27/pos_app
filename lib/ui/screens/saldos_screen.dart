@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart'; // Para formatear fechas y moneda
 import 'package:pos_app/models/client/client.dart'; // Asegúrate de importar tu modelo Client
 import 'package:pos_app/services/client_service.dart'; // Importa tu ClientService
+import 'package:pos_app/services/tickets_service.dart';
 import 'package:provider/provider.dart';
 
 class SaldosScreen extends StatefulWidget {
@@ -84,6 +85,38 @@ class _SaldosScreenState extends State<SaldosScreen> {
                           });
                         },
                       ),
+                    ),
+                    PopupMenuButton<String>(
+                      icon: const Icon(Icons.more_vert, color: Colors.white),
+                      onSelected: (String value) async {
+                        if (value == 'pdf') {
+                          try {
+                            final ticketService = Provider.of<TicketService>(context, listen: false);
+                            await ticketService.pdfsaldos(); // Usa el ID real de la venta
+                            // Mostrar un mensaje o abrir el archivo si quieres
+                          } catch (e) {
+                            print('Error al generar PDF: $e');
+                          }
+                        } else if (value == 'ticket') {
+                          // Aquí puedes usar el mismo método o uno distinto si tienes lógica diferente
+                          try {
+                            final ticketService = Provider.of<TicketService>(context, listen: false);
+                            await ticketService.printSaldos();
+                          } catch (e) {
+                            print('Error al imprimir ticket: $e');
+                          }
+                        }
+                      },
+                      itemBuilder: (BuildContext context) => [
+                        const PopupMenuItem<String>(
+                          value: 'pdf',
+                          child: Text('Ver PDF'),
+                        ),
+                        const PopupMenuItem<String>(
+                          value: 'ticket',
+                          child: Text('Imprimir ticket'),
+                        ),
+                      ],
                     ),
                   ],
                 ),
